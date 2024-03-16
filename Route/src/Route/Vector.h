@@ -626,24 +626,24 @@ namespace route
 		value_type x, y, z, w;
 	};
 
-	using Vector2f = BaseVector2Template<float_t>;
-	using Vector2d = BaseVector2Template<double_t>;
-	using Vector2s = BaseVector2Template<int16_t, float_t>;
-	using Vector2u = BaseVector2Template<uint32_t, float_t>;
-	using Vector2i = BaseVector2Template<int32_t, float_t>;
-	using Vector2l = BaseVector2Template<int64_t, double_t>;
+	using Vec2f = BaseVector2Template<float_t>;
+	using Vec2d = BaseVector2Template<double_t>;
+	using Vec2s = BaseVector2Template<int16_t, float_t>;
+	using Vec2u = BaseVector2Template<uint32_t, float_t>;
+	using Vec2i = BaseVector2Template<int32_t, float_t>;
+	using Vec2l = BaseVector2Template<int64_t, double_t>;
 
-	using Vector3f = RealVector3Template<float_t>;
-	using Vector3d = RealVector3Template<double_t>;
-	using Vector3s = IntegralVector3Template<int16_t, float_t>;
-	using Vector3u = IntegralVector3Template<uint32_t, float_t>;
-	using Vector3i = IntegralVector3Template<int32_t, float_t>;
-	using Vector3l = IntegralVector3Template<int64_t, double_t>;
+	using Vec3f = RealVector3Template<float_t>;
+	using Vec3d = RealVector3Template<double_t>;
+	using Vec3s = IntegralVector3Template<int16_t, float_t>;
+	using Vec3u = IntegralVector3Template<uint32_t, float_t>;
+	using Vec3i = IntegralVector3Template<int32_t, float_t>;
+	using Vec3l = IntegralVector3Template<int64_t, double_t>;
 
-	using Vector4i = BaseVector4Template<int32_t>;
-	using Vector4u = BaseVector4Template<uint32_t>;
-	using Vector4f = BaseVector4Template<float_t>;
-	using Vector4d = BaseVector4Template<double_t>;
+	using Vec4i = BaseVector4Template<int32_t>;
+	using Vec4u = BaseVector4Template<uint32_t>;
+	using Vec4f = BaseVector4Template<float_t>;
+	using Vec4d = BaseVector4Template<double_t>;
 
 }
 
