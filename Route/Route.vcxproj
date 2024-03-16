@@ -236,6 +236,7 @@
     <ClInclude Include="src\Route\Bases.h" />
     <ClInclude Include="src\Route\Object.h" />
     <ClInclude Include="src\Route\Engine.h" />
+    <ClInclude Include="src\Route\Rect.h" />
     <ClInclude Include="src\Route\Vector.h" />
     <ClInclude Include="src\Route\Window.h" />
     <ClInclude Include="src\_opengl.h" />
