@@ -6,6 +6,7 @@
 #include <SDL_opengl.h>
 
 #include <array>
+#include <exception>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,3 +14,6 @@
 using std::array;
 using std::vector;
 
+namespace route { }
+
+using namespace route;
