@@ -5,19 +5,21 @@
 errno_t OpenGL::init() {
 	if (SDL_Init( SDL_INIT_EVERYTHING ) < 0)
 	{
-		std::cout << "ERROR: Couldn't init SDL2: " << SDL_GetError() << '\n';
+		std::cerr << "ERROR: Couldn't init SDL2: " << SDL_GetError() << '\n';
 		return EFAULT;
 	}
 
-	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 32 );
-	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 32 );
-	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 32 );
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 32 );
+	if (SDL_GL_LoadLibrary( nullptr ))
+	{
+		std::cerr << "ERROR: Couldn't load OpenGL Lib: " << SDL_GetError() << '\n';
+		return EFAULT;
+	}
 
 
 	return 0;
 }
 
 void OpenGL::close() {
+	SDL_GL_UnloadLibrary();
 	SDL_Quit();
 }
