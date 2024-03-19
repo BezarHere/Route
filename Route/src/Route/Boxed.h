@@ -53,6 +53,11 @@ namespace route
 			(void)new(m_memory.get_ptr()) value_type( std::forward<_Vargs>( args )... );
 		}
 
+		inline boxed( const this_type &copy );
+		inline boxed( this_type &&move );
+		inline this_type &operator=( const this_type &copy );
+		inline this_type &operator=( this_type &&move );
+
 		inline ~boxed() {
 			if constexpr (!std::is_trivially_destructible_v<value_type>)
 			{
@@ -84,9 +89,39 @@ namespace route
 			return static_cast<value_type *>(m_memory.get_ptr());
 		}
 
+		// derived get
+		template <typename _Ey, bool = std::is_base_of_v<_Ey, _Ty>>
+		inline _Ey &get() noexcept {
+			return *dynamic_cast<_Ey *>(m_memory.get_ptr());
+		}
+
+		// derived get
+		template <typename _Ey, bool = std::is_base_of_v<_Ey, _Ty>>
+		inline const _Ey &get() const noexcept {
+			return *dynamic_cast<_Ey *>(m_memory.get_ptr());
+		}
+
 	private:
 		memory_type m_memory;
 	};
 
+
+	template<typename _Ty, typename _Mem>
+	inline boxed<_Ty, _Mem>::boxed( const this_type &copy ) : boxed( *copy ) {
+	}
+
+	template<typename _Ty, typename _Mem>
+	inline boxed<_Ty, _Mem>::boxed( this_type &&move ) : boxed( *move ) {
+	}
+
+	template<typename _Ty, typename _Mem>
+	inline boxed<_Ty, _Mem> &boxed<_Ty, _Mem>::operator=( const this_type &copy ) {
+		return this->operator=( *copy );
+	}
+
+	template<typename _Ty, typename _Mem>
+	inline boxed<_Ty, _Mem> &boxed<_Ty, _Mem>::operator=( this_type &&move ) {
+		return this->operator=( *move );
+	}
 
 }
