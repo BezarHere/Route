@@ -3,11 +3,6 @@
 
 namespace route
 {
-	typedef struct
-	{
-		Vector2f v[ 4 ];
-	} Quad_t;
-
 	template <typename _T>
 	struct BaseRect2Template
 	{
