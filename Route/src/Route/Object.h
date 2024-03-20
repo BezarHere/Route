@@ -21,7 +21,7 @@ namespace route
 	{
 		friend NodeTree;
 	public:
-		static constexpr size_t object_max_size = 380;
+		static constexpr size_t object_max_size = 512;
 
 
 
@@ -37,7 +37,7 @@ namespace route
 
 	using object = BaseObject;
 
-	class Object3D : public BaseObject
+	class Object3D final : public BaseObject
 	{
 	public:
 		using this_type = Object3D;
@@ -56,7 +56,7 @@ namespace route
 		GlobalCache m_global;
 	};
 
-	class Object2D : public BaseObject
+	class Object2D final : public BaseObject
 	{
 	public:
 		using this_type = Object2D;
@@ -79,6 +79,9 @@ namespace route
 
 	using object_2d = Object2D;
 	using object_3d = Object3D;
+
+	static_assert(sizeof( object_2d ) <= BaseObject::object_max_size, "Object2D will be sliced inside a boxed object");
+	static_assert(sizeof( object_3d ) <= BaseObject::object_max_size, "Object3D will be sliced inside a boxed object");
 
 	using object_boxed = boxed<BaseObject, placement_block<BaseObject::object_max_size>>;
 
