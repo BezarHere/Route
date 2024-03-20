@@ -7,16 +7,15 @@ namespace route
 	class NodeTree;
 	class BaseObject;
 
-	typedef string object_path_t;
-	typedef string object_name_t;
+	using object_path = string;
+	using object_name = string;
+	typedef int16_t zindex_t;
 
 	enum class ObjectType
 	{
 		Object2D,
 		Object3D,
 	};
-
-
 
 	class BaseObject
 	{
@@ -28,27 +27,28 @@ namespace route
 
 	protected:
 		const ObjectType m_type;
-		object_name_t m_name;
+		object_name m_name;
 		index_t m_parent;
 		vector<index_t> m_children;
 		vector<component_boxed> m_children;
-		bool m_enabled;
+		bool m_active;
+		bool m_visible;
 	};
 
 	using object = BaseObject;
 
-	template <typename _Trn>
-	class TObject : public BaseObject
+	class Object3D : public BaseObject
 	{
 	public:
-		using this_type = TObject<_Trn>;
-		using transform_type = _Trn;
+		using this_type = Object3D;
+		using transform_type = Transform3D;
 		using vector_type = typename transform_type::vector_type;
 
 		struct GlobalCache
 		{
 			transform_type transform;
-			bool enabled;
+			bool active;
+			bool visible;
 		};
 
 	private:
@@ -56,8 +56,29 @@ namespace route
 		GlobalCache m_global;
 	};
 
-	using object_2d = TObject<Transform2D>;
-	using object_3d = TObject<Transform3D>;
+	class Object2D : public BaseObject
+	{
+	public:
+		using this_type = Object2D;
+		using transform_type = Transform2D;
+		using vector_type = typename transform_type::vector_type;
+
+		struct GlobalCache
+		{
+			transform_type transform;
+			zindex_t m_zindex;
+			bool active;
+			bool visible;
+		};
+
+	private:
+		transform_type m_transform;
+		zindex_t m_zindex;
+		GlobalCache m_global;
+	};
+
+	using object_2d = Object2D;
+	using object_3d = Object3D;
 
 	using object_boxed = boxed<BaseObject, placement_block<BaseObject::object_max_size>>;
 
