@@ -11,7 +11,7 @@ namespace route
 	class Transform2D
 	{
 	public:
-		typedef float_t value_type;
+		using value_type = float_t;
 		using vector_type = BaseVector2Template<value_type>;
 
 		union transform_element3x2
@@ -317,6 +317,9 @@ namespace route
 	class Transform3D
 	{
 	public:
+		using value_type = float_t;
+		using vector_type = BaseVector2Template<value_type>;
+
 		union transform_element4x3
 		{
 			Vec3f v[ 4 ]{ Vec3f( 1.0f, 0.0f, 0.0f ), Vec3f( 0.0f, 1.0f, 0.0f ), Vec3f( 0.0f, 0.0f, 1.0f ), Vec3f( 0.0f, 0.0f, 0.0f ) };
