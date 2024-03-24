@@ -120,12 +120,20 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,6 +145,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -145,6 +155,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="libraries\glew\include\GL\eglew.h" />
@@ -234,9 +250,15 @@
     <ClInclude Include="src\Route.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Route\Bases.h" />
+    <ClInclude Include="src\Route\Component.h" />
+    <ClInclude Include="src\Route\Image.h" />
+    <ClInclude Include="src\Route\NodeTree.h" />
     <ClInclude Include="src\Route\Object.h" />
     <ClInclude Include="src\Route\Engine.h" />
     <ClInclude Include="src\Route\Rect.h" />
+    <ClInclude Include="src\Route\Renderer.h" />
+    <ClInclude Include="src\Route\Shapes.h" />
+    <ClInclude Include="src\Route\Transform.h" />
     <ClInclude Include="src\Route\Vector.h" />
     <ClInclude Include="src\Route\Window.h" />
     <ClInclude Include="src\_opengl.h" />
@@ -249,10 +271,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Route.cpp" />
+    <ClCompile Include="src\Route\Component.cpp" />
+    <ClCompile Include="src\Route\Image.cpp" />
+    <ClCompile Include="src\Route\Object.cpp" />
+    <ClCompile Include="src\Route\Renderer.cpp" />
     <ClCompile Include="src\Route\Window.cpp" />
     <ClCompile Include="src\_opengl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpp.hint" />
     <None Include="SDL2.dll" />
     <None Include="SDL2_image.dll" />
     <None Include="SDL2_ttf.dll" />
