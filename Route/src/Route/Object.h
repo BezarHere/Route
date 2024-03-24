@@ -5,7 +5,7 @@
 namespace route
 {
 	class NodeTree;
-	class BaseObject;
+	class Object;
 
 	using object_path = string;
 	using object_name = string;
@@ -17,72 +17,54 @@ namespace route
 		Object3D,
 	};
 
-	class BaseObject
+	class Object
 	{
 		friend NodeTree;
 	public:
-		static constexpr size_t object_max_size = 512;
 
 
+		inline Object( const ObjectType type )
+			: m_type{ type } {
+		}
 
-	protected:
+		~Object() {
+		}
+
+		inline void update( real_t deltatime );
+
+		inline index_t add_component( std::unique_ptr<Component> comp ) {
+			m_components.emplace_back( comp.release() );
+			return m_components.size() - 1;
+		}
+	private:
+		void update_2d( real_t deltatime );
+		void update_3d( real_t deltatime );
+
+	private:
+
 		const ObjectType m_type;
-		object_name m_name;
-		index_t m_parent;
-		vector<index_t> m_children;
-		vector<component_boxed> m_children;
-		bool m_active;
-		bool m_visible;
+
+		//object_name m_name = "";
+		index_t m_parent = npos;
+		vector<index_t> m_children{};
+		vector<std::unique_ptr<Component>> m_components{};
+		bool m_active = true;
+		bool m_visible = true;
 	};
 
-	using object = BaseObject;
-
-	class Object3D final : public BaseObject
-	{
-	public:
-		using this_type = Object3D;
-		using transform_type = Transform3D;
-		using vector_type = typename transform_type::vector_type;
-
-		struct GlobalCache
+	inline void Object::update( real_t deltatime ) {
+		for (auto &comp : m_components)
 		{
-			transform_type transform;
-			bool active;
-			bool visible;
-		};
+			comp->update( *this );
+		}
 
-	private:
-		transform_type m_transform;
-		GlobalCache m_global;
-	};
-
-	class Object2D final : public BaseObject
-	{
-	public:
-		using this_type = Object2D;
-		using transform_type = Transform2D;
-		using vector_type = typename transform_type::vector_type;
-
-		struct GlobalCache
+		if (m_type == ObjectType::Object2D)
 		{
-			transform_type transform;
-			zindex_t m_zindex;
-			bool active;
-			bool visible;
-		};
+			return update_2d( deltatime );
+		}
+		return update_3d( deltatime );
+	}
 
-	private:
-		transform_type m_transform;
-		zindex_t m_zindex;
-		GlobalCache m_global;
-	};
-
-	using object_2d = Object2D;
-	using object_3d = Object3D;
-
-	static_assert(sizeof( object_2d ) <= BaseObject::object_max_size, "Object2D will be sliced inside a boxed object");
-	static_assert(sizeof( object_3d ) <= BaseObject::object_max_size, "Object3D will be sliced inside a boxed object");
-
-	using object_boxed = boxed<BaseObject, placement_block<BaseObject::object_max_size>>;
+	using object = Object;
 
 }
