@@ -30,7 +30,7 @@ namespace route
 		static_assert(is_pure_v<_Ty>, "_Ty: Only pure types allowed");
 
 		using this_type = boxed<_Ty, _Mem>;
-		using value_type = std::remove_cv_t<_Ty>;
+		using value_type = std::remove_cv_t<_Ty>; /* guaranteed */
 		using memory_type = _Mem;
 		using block_type = typename memory_type::block_type;
 		static constexpr size_t size = memory_type::size;
@@ -42,12 +42,6 @@ namespace route
 			new (val.m_memory.get_ptr()) _Ey( std::forward<_Vargs>( args )... );
 			return val;
 		}
-
-		inline boxed() = default;
-		inline boxed( const this_type &copy );
-		inline boxed( this_type &&move ) noexcept;
-		inline this_type &operator=( const this_type &copy );
-		inline this_type &operator=( this_type &&move ) noexcept;
 
 		inline value_type *ptr() noexcept {
 			return static_cast<value_type *>(m_memory.get_ptr());
@@ -65,17 +59,49 @@ namespace route
 			return static_cast<const value_type *>(m_memory.get_ptr());
 		}
 
-		inline ~boxed() {
-			// FIXME: container type's proxies break
-			ptr()->~value_type();
+		inline boxed() = default;
+		inline boxed( const this_type &copy );
+		inline boxed( this_type &&move ) noexcept;
+		inline this_type &operator=( const this_type &copy );
+		inline this_type &operator=( this_type &&move ) noexcept;
+
+
+		inline boxed( const value_type &copy ) {
+			if constexpr (abstract)
+			{
+				this->operator=( copy );
+				//std::_Xruntime_error( "abstract types can't be copy-constructible; try using boxed<T>::make" );
+			}
+			else
+			{
+				new(ptr()) value_type( copy );
+			}
+		}
+
+		inline boxed( value_type &&move ) noexcept {
+			if constexpr (abstract)
+			{
+				this->operator=( move );
+				//std::_Xruntime_error( "abstract types can't be move-constructible; try using boxed<T>::make" );
+			}
+			else
+			{
+				new(ptr()) value_type( move );
+			}
 		}
 
 		inline this_type &operator=( const value_type &copy ) {
-			return *this = copy;
+			*ptr() = copy;
+			return *this;
 		}
 
 		inline this_type &operator=( value_type &&copy ) {
-			return *this = copy;
+			*ptr() = copy;
+			return *this;
+		}
+
+		inline ~boxed() {
+			ptr()->~value_type();
 		}
 
 		inline const value_type &operator*() const noexcept(!std::is_abstract_v<value_type>) {
@@ -96,7 +122,7 @@ namespace route
 			}
 			else
 			{
-				return *static_cast<const value_type *>(m_memory.get_ptr());
+				return *static_cast<value_type *>(m_memory.get_ptr());
 			}
 		}
 
@@ -127,21 +153,21 @@ namespace route
 	};
 
 	template<typename _Ty, typename _Mem>
-	inline boxed<_Ty, _Mem>::boxed( const this_type &copy ) : boxed(*copy) {
+	inline boxed<_Ty, _Mem>::boxed( const this_type &copy ) : boxed( *copy ) {
 	}
 
 	template<typename _Ty, typename _Mem>
-	inline boxed<_Ty, _Mem>::boxed( this_type &&move ) : boxed( *move ) noexcept {
+	inline boxed<_Ty, _Mem>::boxed( this_type &&move ) noexcept : boxed( *move ) {
 	}
 
 	template<typename _Ty, typename _Mem>
 	inline boxed<_Ty, _Mem> &boxed<_Ty, _Mem>::operator=( const this_type &copy ) {
-		// TODO: insert return statement here
+		return operator=( *copy );
 	}
 
 	template<typename _Ty, typename _Mem>
 	inline boxed<_Ty, _Mem> &boxed<_Ty, _Mem>::operator=( this_type &&move ) noexcept {
-		// TODO: insert return statement here
+		return operator=( *move );
 	}
 
 }
