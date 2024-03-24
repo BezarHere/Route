@@ -5,36 +5,35 @@
 #include <string>
 #include <chrono>
 
-// FIXME: MSVC 1800 version is just a guess, double check later
-#if defined(_MSC_VER) && _MSC_VER > 1800
-#define _INTERFACE __interface
-#else
-#define _INTERFACE struct
-#endif
-
 namespace route
 {
 	using std::array;
 	using std::vector;
 	using std::string;
 
-	using time_point_ms =  std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds>;
-	using time_point_us =  std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds>;
-	using time_point_ns =  std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
+	typedef float real_t;
+
+	using time_point_ms = std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds>;
+	using time_point_us = std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds>;
+	using time_point_ns = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
 	typedef size_t index_t;
 	_INLINE_VAR constexpr index_t npos = (size_t)-1;
 
-	_INLINE_VAR constexpr float Pi = 3.1415926f;
-	_INLINE_VAR constexpr float Tau = Pi * 2.f;
-	_INLINE_VAR constexpr float E = 2.7182818f;
+	_INLINE_VAR constexpr real_t Pi = 3.1415926f;
+	_INLINE_VAR constexpr real_t Tau = Pi * 2.f;
+	_INLINE_VAR constexpr real_t E = 2.7182818f;
+	_INLINE_VAR constexpr real_t Epsilon = 1e-4f;
 
-	_INLINE_VAR constexpr double dPi = 3.141592653589793;
-	_INLINE_VAR constexpr double dTau = dPi * 2.0;
-	_INLINE_VAR constexpr double dE = 2.718281828459045;
+	// is it pure? not a reference nor a const nor a volatile type and not the void type
+	template <typename _Ty>
+	_INLINE_VAR constexpr bool is_pure_v =
+		!(std::is_reference_v<_Ty> || std::is_const_v<_Ty> || std::is_volatile_v<_Ty> || std::is_void_v<_Ty>);
 
-	_INLINE_VAR constexpr float Epsilon = 1e-4f;
-	_INLINE_VAR constexpr double dEpsilon = 1e-7f;
+	// is the type related?
+	template <typename _To, typename _With>
+	_INLINE_VAR constexpr bool is_related_v =
+		std::is_base_of_v<_To, _With> || std::is_base_of_v<_With, _To> || std::is_same_v<_To, _With>;
 
 	template <typename _Ty>
 	inline static constexpr size_t max_sizeof() {
