@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "../_opengl.h"
+#include "SDL.h"
 #include "Window.h"
+#include <iostream>
 
 static inline void setup_opengl() {
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 32 );
