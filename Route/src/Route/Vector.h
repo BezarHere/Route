@@ -5,35 +5,35 @@
 namespace route
 {
 	template <typename _T, typename _R = _T>
-	struct BaseVector2Template
+	struct TVector2
 	{
-		using this_type = BaseVector2Template<_T, _R>;
-		using real_this_type = BaseVector2Template<_R, _R>;
+		using this_type = TVector2<_T, _R>;
+		using real_this_type = TVector2<_R, _R>;
 		using value_type = _T;
 		using real_type = _R;
 
-		constexpr inline BaseVector2Template( value_type xx, value_type yy ) noexcept
+		constexpr inline TVector2( value_type xx, value_type yy ) noexcept
 			: x{ xx }, y{ yy } {
 		}
 
 
-		constexpr inline BaseVector2Template() noexcept
+		constexpr inline TVector2() noexcept
 			: x{}, y{} {
 		}
 
 		template <typename _E>
-		constexpr inline BaseVector2Template( const BaseVector2Template<value_type, _E> &copy ) noexcept
+		constexpr inline TVector2( const TVector2<value_type, _E> &copy ) noexcept
 			: x{ value_type( copy.x ) }, y{ value_type( copy.y ) } {
 		}
 
 		template <typename _E, typename _V>
-		constexpr inline BaseVector2Template( const BaseVector2Template<_E, _V> &copy ) noexcept
+		constexpr inline TVector2( const TVector2<_E, _V> &copy ) noexcept
 			: x{ value_type( copy.x ) }, y{ value_type( copy.y ) } {
 		}
 
 		// for win32's Point & PointF
 		template <typename _P>
-		constexpr inline explicit BaseVector2Template( const _P &copy ) noexcept
+		constexpr inline explicit TVector2( const _P &copy ) noexcept
 			: x{ value_type( copy.X ) }, y{ value_type( copy.Y ) } {
 		}
 
@@ -206,12 +206,12 @@ namespace route
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator<<( const BaseVector2Template<_E> bits_v ) const {
+		inline constexpr this_type operator<<( const TVector2<_E> bits_v ) const {
 			return this_type( this->x << bits_v.x, this->y << bits_v.y );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator>>( const BaseVector2Template<_E> bits_v ) const {
+		inline constexpr this_type operator>>( const TVector2<_E> bits_v ) const {
 			return this_type( this->x >> bits_v.x, this->y >> bits_v.y );
 		}
 
@@ -235,22 +235,22 @@ namespace route
 
 
 	template <typename _T>
-	struct BaseVector3Template
+	struct TVector3
 	{
-		using this_type = BaseVector3Template<_T>;
+		using this_type = TVector3<_T>;
 		using value_type = _T;
 
-		constexpr inline BaseVector3Template( value_type xx, value_type yy, value_type zz ) noexcept
+		constexpr inline TVector3( value_type xx, value_type yy, value_type zz ) noexcept
 			: x{ xx }, y{ yy }, z{ zz } {
 		}
 
 
-		constexpr inline BaseVector3Template() noexcept
+		constexpr inline TVector3() noexcept
 			: x{}, y{}, z{} {
 		}
 
 		template <typename _E>
-		constexpr inline BaseVector3Template( const BaseVector3Template<_E> &copy ) noexcept
+		constexpr inline TVector3( const TVector3<_E> &copy ) noexcept
 			: x{ value_type( copy.x ) }, y{ value_type( copy.y ) }, z{ value_type( copy.z ) } {
 		}
 
@@ -429,9 +429,9 @@ namespace route
 	};
 
 	template <typename _T>
-	struct RealVector3Template : public BaseVector3Template<_T>
+	struct RealVector3Template : public TVector3<_T>
 	{
-		using base_type = BaseVector3Template<_T>;
+		using base_type = TVector3<_T>;
 		using this_type = RealVector3Template<_T>;
 		using value_type = _T;
 
@@ -446,7 +446,7 @@ namespace route
 		}
 
 		template <typename _E>
-		constexpr inline RealVector3Template( const BaseVector3Template<_E> &copy )
+		constexpr inline RealVector3Template( const TVector3<_E> &copy )
 			: base_type( copy ) {
 		}
 
@@ -502,9 +502,9 @@ namespace route
 	};
 
 	template <typename _T, typename _R>
-	struct IntegralVector3Template : public BaseVector3Template<_T>
+	struct IntegralVector3Template : public TVector3<_T>
 	{
-		using base_type = BaseVector3Template<_T>;
+		using base_type = TVector3<_T>;
 		using this_type = IntegralVector3Template<_T, _R>;
 		using real_type = _R;
 		using integral_type = _T;
@@ -522,7 +522,7 @@ namespace route
 		}
 
 		template <typename _E>
-		constexpr inline IntegralVector3Template( const BaseVector3Template<_E> &copy )
+		constexpr inline IntegralVector3Template( const TVector3<_E> &copy )
 			: base_type( copy ) {
 		}
 
@@ -566,12 +566,12 @@ namespace route
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator<<( const BaseVector3Template<_E> bits_v ) const {
+		inline constexpr this_type operator<<( const TVector3<_E> bits_v ) const {
 			return this_type( this->x << bits_v.x, this->y << bits_v.y, this->z << bits_v.z );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator>>( const BaseVector3Template<_E> bits_v ) const {
+		inline constexpr this_type operator>>( const TVector3<_E> bits_v ) const {
 			return this_type( this->x >> bits_v.x, this->y >> bits_v.y, this->z >> bits_v.z );
 		}
 
@@ -626,12 +626,13 @@ namespace route
 		value_type x, y, z, w;
 	};
 
-	using Vec2f = BaseVector2Template<float_t>;
-	using Vec2d = BaseVector2Template<double_t>;
-	using Vec2s = BaseVector2Template<int16_t, float_t>;
-	using Vec2u = BaseVector2Template<uint32_t, float_t>;
-	using Vec2i = BaseVector2Template<int32_t, float_t>;
-	using Vec2l = BaseVector2Template<int64_t, double_t>;
+	using Vec2f = TVector2<float_t>;
+	using Vec2d = TVector2<double_t>;
+	using Vec2s = TVector2<int16_t, float_t>;
+	using Vec2us = TVector2<uint16_t, float_t>;
+	using Vec2u = TVector2<uint32_t, float_t>;
+	using Vec2i = TVector2<int32_t, float_t>;
+	using Vec2l = TVector2<int64_t, double_t>;
 
 	using Vec3f = RealVector3Template<float_t>;
 	using Vec3d = RealVector3Template<double_t>;
@@ -651,12 +652,12 @@ namespace std
 {
 
 	template <typename _T, typename _R>
-	inline std::ostream &operator<<( std::ostream &out, const route::BaseVector2Template<_T, _R> &vec ) {
+	inline std::ostream &operator<<( std::ostream &out, const route::TVector2<_T, _R> &vec ) {
 		return out << '(' << vec.x << ", " << vec.y << ')';
 	}
 
 	template <typename _T>
-	inline std::ostream &operator<<( std::ostream &out, const route::BaseVector3Template<_T> &vec ) {
+	inline std::ostream &operator<<( std::ostream &out, const route::TVector3<_T> &vec ) {
 		return out << '(' << vec.x << ", " << vec.y << ", " << vec.z << ')';
 	}
 
