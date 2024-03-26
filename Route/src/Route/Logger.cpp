@@ -5,6 +5,8 @@
 
 using second = std::chrono::seconds;
 
+LogLevel Logger::s_allowed = LogLevel::Debug;
+
 static inline tm log_time() {
 	tm long_time;
 	time_t short_time;
