@@ -122,7 +122,7 @@ namespace ig
 	using Clr = TColor<float_t, 1>;
 
 	template <typename _COLOR>
-	struct BaseColorTableTemplate
+	struct TColorTable
 	{
 		using color_type = _COLOR;
 		using color_value_type = typename color_type::value_type;
@@ -291,11 +291,11 @@ namespace ig
 
 
 	private:
-		BaseColorTableTemplate() = delete;
-		~BaseColorTableTemplate() = delete;
+		TColorTable() = delete;
+		~TColorTable() = delete;
 	};
 
-	using Clr8Table = BaseColorTableTemplate<Clr8>;
-	using Clr16Table = BaseColorTableTemplate<Clr16>;
-	using ClrTable = BaseColorTableTemplate<Clr>;
+	using Clr8Table = TColorTable<Clr8>;
+	using Clr16Table = TColorTable<Clr16>;
+	using ClrTable = TColorTable<Clr>;
 }
