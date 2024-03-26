@@ -4,7 +4,7 @@
 
 namespace route
 {
-	class NodeTree
+	class Scene
 	{
 	public:
 
@@ -71,7 +71,7 @@ namespace route
 		vector<index_t> m_order;
 	};
 
-	inline index_t NodeTree::add_object( const object &obj, const index_t parent ) {
+	inline index_t Scene::add_object( const object &obj, const index_t parent ) {
 		if (parent != npos && parent >= m_objects.size())
 		{
 			throw std::out_of_range( "parent" );
@@ -88,7 +88,7 @@ namespace route
 		return index;
 	}
 
-	inline void NodeTree::validate() {
+	inline void Scene::validate() {
 		const size_t objects_count = m_objects.size();
 		for (index_t index = 0; index < objects_count; index++)
 		{
@@ -119,7 +119,7 @@ namespace route
 		}
 	}
 
-	inline void NodeTree::rebuild() {
+	inline void Scene::rebuild() {
 		m_roots.clear();
 		m_order.clear();
 
