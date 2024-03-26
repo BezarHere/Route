@@ -1,7 +1,7 @@
 #pragma once
 #include "Bases.h"
 
-namespace ig
+namespace route
 {
 	template <typename _T, int _DEFAULT>
 	struct TColor
