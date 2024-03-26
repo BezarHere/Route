@@ -44,4 +44,8 @@ namespace route
 	inline static constexpr size_t max_sizeof() {
 		return std::max( sizeof( _Ty ), max_sizeof<_Types...>() );
 	}
+
+	struct nothing
+	{
+	};
 }
