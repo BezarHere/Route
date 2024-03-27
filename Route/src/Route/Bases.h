@@ -35,6 +35,26 @@ namespace route
 	_INLINE_VAR constexpr bool is_related_v =
 		std::is_base_of_v<_To, _With> || std::is_base_of_v<_With, _To> || std::is_same_v<_To, _With>;
 
+	template <typename _Ty, typename _Ey>
+	inline constexpr bool is_any() {
+		return std::is_same_v<_Ty, _Ey>;
+	}
+
+	template <typename _Ty, typename _Ey, typename... _Vargs>
+	inline constexpr bool is_any() {
+		return std::is_same_v<_Ty, _Ey> || is_any<_Ty, _Vargs>();
+	}
+
+	template <typename _Ty, typename _Ey>
+	inline constexpr bool is_all() {
+		return std::is_same_v<_Ty, _Ey>;
+	}
+
+	template <typename _Ty, typename _Ey, typename... _Vargs>
+	inline constexpr bool is_all() {
+		return std::is_same_v<_Ty, _Ey> && is_all<_Ty, _Vargs>();
+	}
+
 	template <typename _Ty>
 	inline static constexpr size_t max_sizeof() {
 		return sizeof( _Ty );
