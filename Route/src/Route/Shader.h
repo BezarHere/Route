@@ -1,11 +1,11 @@
 #pragma once
-#include "Bases.h"
+#include "Resource.h"
 
 namespace route
 {
 	typedef unsigned ShaderID;
 
-	class Shader
+	class Shader : public Resource
 	{
 	public:
 
