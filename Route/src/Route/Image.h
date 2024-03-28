@@ -20,6 +20,8 @@ namespace route
 	{
 	public:
 		Image( Vec2u size );
+		Image( const Image &copy );
+		~Image();
 
 		Vec2u size() const;
 		uint32_t width() const;
@@ -30,6 +32,6 @@ namespace route
 
 	private:
 		struct State;
-		std::unique_ptr<State> m_state;
+		State *m_state;
 	};
 }

@@ -13,8 +13,15 @@ namespace route
 		}
 	};
 
-	Image::Image( Vec2u size ) {
+	Image::Image( Vec2u size ) : m_state{ new State() } {
 		m_state->surface = SDL_CreateRGBSurfaceWithFormat( 0, size.x, size.y, 32, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888 );
+	}
+
+	Image::Image( const Image &copy ) {
+	}
+
+	Image::~Image() {
+		delete m_state;
 	}
 
 	Vec2u Image::size() const {
