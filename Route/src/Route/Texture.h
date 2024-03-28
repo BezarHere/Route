@@ -1,4 +1,5 @@
 #pragma once
+#include "Resource.h"
 
 
 namespace route
@@ -13,7 +14,7 @@ namespace route
 
 	typedef unsigned TextureID;
 
-	class Texture
+	class Texture : public Resource
 	{
 	public:
 		Texture( const Texture & );
