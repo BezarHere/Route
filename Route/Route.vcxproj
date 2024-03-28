@@ -255,7 +255,9 @@
     <ClInclude Include="src\Route\Component.h" />
     <ClInclude Include="src\Route\Image.h" />
     <ClInclude Include="src\Route\Logger.h" />
+    <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
+    <ClInclude Include="src\Route\Resource.h" />
     <ClInclude Include="src\Route\ResourceServer.h" />
     <ClInclude Include="src\Route\Scene.h" />
     <ClInclude Include="src\Route\Object.h" />
@@ -264,7 +266,6 @@
     <ClInclude Include="src\Route\Renderer.h" />
     <ClInclude Include="src\Route\Shader.h" />
     <ClInclude Include="src\Route\Primitives.h" />
-    <ClInclude Include="src\Route\SpanArray.h" />
     <ClInclude Include="src\Route\Texture.h" />
     <ClInclude Include="src\Route\Transform.h" />
     <ClInclude Include="src\Route\Vector.h" />
