@@ -5,6 +5,16 @@
 #include <string>
 #include <chrono>
 
+#ifndef FORCE_INLINE
+#if defined(__GNUC__) || defined(__clang__)
+#define FORCE_INLINE __attribute__((always_inline)) inline
+#elif defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE inline
+#endif
+#endif
+
 namespace route
 {
 	using std::array;
@@ -52,7 +62,7 @@ namespace route
 
 	template <typename _Ty, typename _Ey, typename... _Vargs>
 	inline constexpr bool is_all() {
-		return std::is_same_v<_Ty, _Ey> && is_all<_Ty, _Vargs>();
+		return std::is_same_v<_Ty, _Ey> &&is_all<_Ty, _Vargs>();
 	}
 
 	template <typename _Ty>
