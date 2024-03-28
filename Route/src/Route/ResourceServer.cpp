@@ -7,7 +7,6 @@
 
 namespace route
 {
-	template ResourceServer<Image>;
 
 	static constexpr RID ChunkBShift = 20;
 	static constexpr RID ChunkMask = ~((1u << ChunkBShift) - 1); // maximum possible number of chunks is 4096
