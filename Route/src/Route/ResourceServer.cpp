@@ -130,8 +130,7 @@ namespace route
 		vector<Chunk> chunks{};
 	};
 
-
-
+	// no need to check if the internals are null, let the user figure it out
 	template<typename _Ty>
 	typename ResourceServer<_Ty>::resource_type &ResourceServer<_Ty>::get_resource( RID rid ) {
 		return s_internal->get_resource( rid );
@@ -139,6 +138,13 @@ namespace route
 
 	template<typename _Ty>
 	RID ResourceServer<_Ty>::add_resource( const resource_type &resource ) {
+		if (!s_internal)
+		{
+			// TODO: type name in the error msg, please?
+			Logger::write( "from add_resource: ResourceServer didn't initalize" );
+			return RIDnpos;
+		}
+
 		const index_t chunk_index = s_internal->unlocked_chunk_or_create();
 
 		typename Internal::Chunk &chunk = s_internal->chunks[ chunk_index ];
@@ -160,6 +166,13 @@ namespace route
 
 	template<typename _Ty>
 	void ResourceServer<_Ty>::pop_resource( RID rid ) {
+		if (!s_internal)
+		{
+			// TODO: type name in the error msg, please?
+			Logger::write( "from pop_resource: ResourceServer didn't initalize" );
+			return RIDnpos;
+		}
+
 		const RIndex rindex = s_internal->get_rindex( rid );
 
 		if (rindex.chunk >= s_internal->chunks.size())
@@ -177,6 +190,13 @@ namespace route
 
 	template<typename _Ty>
 	void ResourceServer<_Ty>::set_resource_name( RID rid, const resource_name_char *name ) {
+		if (!s_internal)
+		{
+			// TODO: type name in the error msg, please?
+			Logger::write( "from set_resource_name: ResourceServer didn't initalize" );
+			return RIDnpos;
+		}
+
 		const RIndex rindex = s_internal->get_rindex( rid );
 		(void)strncpy_s(
 			s_internal->chunks[ rindex.chunk ].elements[ rindex.element ].name.data(),
