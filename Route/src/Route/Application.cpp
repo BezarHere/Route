@@ -6,6 +6,8 @@
 #include "ResourceServer.h"
 #include "Image.h"
 #include "Texture.h"
+#include "Material.h"
+#include "Shader.h"
 
 
 namespace route
@@ -146,7 +148,7 @@ namespace route
 	}
 
 	void Application::_toggle_resource_servers( bool new_state ) {
-		RSBC::open<Image, Texture>( );
+		RSBC::execute<Resource, Image, Texture, Material, Shader>( new_state );
 	}
 
 }
