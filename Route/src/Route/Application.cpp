@@ -5,6 +5,7 @@
 #include <mutex>
 #include "ResourceServer.h"
 #include "Image.h"
+#include "Texture.h"
 
 
 namespace route
@@ -33,7 +34,8 @@ namespace route
 		static inline void open() {
 			ResourceServer<_Ty>::open();
 			ResourceServer<_Ey>::open();
-			RSBC::open<_Tys...>();
+			if constexpr (sizeof...(_Tys))
+				RSBC::open<_Tys...>();
 		}
 
 		// two single parameters for overloading (packed args are optional which is not overloaded)
@@ -41,7 +43,8 @@ namespace route
 		static inline void close() {
 			ResourceServer<_Ty>::close();
 			ResourceServer<_Ey>::close();
-			RSBC::close<_Tys...>();
+			if constexpr (sizeof...(_Tys))
+				RSBC::close<_Tys...>();
 		}
 	};
 
@@ -143,7 +146,7 @@ namespace route
 	}
 
 	void Application::_toggle_resource_servers( bool new_state ) {
-		RSBC::execute<Image>( new_state );
+		RSBC::open<Image, Texture>( );
 	}
 
 }
