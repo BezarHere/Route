@@ -3,17 +3,47 @@
 
 namespace route
 {
-	template <typename _Ty, size_t _Sz = sizeof( _Ty )>
+	template <typename _Ty>
+	struct type_shifter
+	{
+		using value_type = _Ty;
+
+		template <typename _Ey>
+		static void construct( value_type *to, const _Ey &from ) {
+			new (to) _Ey( from );
+		}
+
+		template <typename _Ey>
+		static void construct( value_type *to, _Ey &&from ) {
+			new (to) _Ey( from );
+		}
+
+		static void destroy( value_type &obj ) {
+			obj.~value_type();
+		}
+
+		static void assign( value_type &to, const value_type &from ) {
+			to = from;
+		}
+
+		static void assign( value_type &to, value_type &&from ) {
+			to = from;
+		}
+
+	};
+
+	template <typename _Ty, size_t _Sz = sizeof(_Ty), typename _Shift = type_shifter<_Ty>>
 	class boxed
 	{
 	public:
 		static_assert(sizeof( _Ty ) <= _Sz, "Size is too small for _Ty");
 
-		using this_type = boxed<_Ty, _Sz>;
+		using this_type = boxed<_Ty, _Sz, _Shift>;
 		using value_type = _Ty;
+		using type_shifter = _Shift;
 		static constexpr size_t size = _Sz;
 		using memory_element = uint8_t;
-		static constexpr memory_count =
+		static constexpr size_t memory_count =
 			size / sizeof( memory_element ) + ((size % sizeof( memory_element )) ? 1 : 0);
 		using block_type = array<memory_element, memory_count>;
 		static constexpr bool abstract = std::is_abstract_v<_Ty>;
@@ -50,40 +80,30 @@ namespace route
 
 		inline boxed( const value_type &copy ) {
 			if constexpr (abstract)
-			{
-				this->operator=( copy );
-				//std::_Xruntime_error( "abstract types can't be copy-constructible; try using boxed<T>::make" );
-			}
+				std::_Xruntime_error( "abstract types can't be copy-constructible; try using boxed<T>::make" );
 			else
-			{
-				new(ptr()) value_type( copy );
-			}
+				type_shifter::construct( ptr(), copy );
 		}
 
 		inline boxed( value_type &&move ) noexcept {
 			if constexpr (abstract)
-			{
-				this->operator=( move );
-				//std::_Xruntime_error( "abstract types can't be move-constructible; try using boxed<T>::make" );
-			}
+				std::_Xruntime_error( "abstract types can't be move-constructible; try using boxed<T>::make" );
 			else
-			{
-				new(ptr()) value_type( move );
-			}
+				type_shifter::construct( ptr(), move );
 		}
 
 		inline this_type &operator=( const value_type &copy ) {
-			*ptr() = copy;
+			type_shifter::assign( *ptr(), copy );
 			return *this;
 		}
 
 		inline this_type &operator=( value_type &&copy ) {
-			*ptr() = copy;
+			type_shifter::assign( *ptr(), copy );
 			return *this;
 		}
 
 		inline ~boxed() {
-			ptr()->~value_type();
+			type_shifter::destroy( *ptr() );
 		}
 
 		inline const value_type &operator*() const noexcept(!std::is_abstract_v<value_type>) {
@@ -131,24 +151,24 @@ namespace route
 		}
 
 	private:
-		memory_type m_memory;
+		block_type m_memory;
 	};
 
-	template<typename _Ty, size_t _Sz>
-	inline boxed<_Ty, _Sz>::boxed( const this_type &copy ) : boxed( *copy ) {
+	template <typename _Ty, size_t _Sz, typename _Shift>
+	inline boxed<_Ty, _Sz, _Shift>::boxed( const this_type &copy ) : boxed( *copy ) {
 	}
 
-	template<typename _Ty, size_t _Sz>
-	inline boxed<_Ty, _Sz>::boxed( this_type &&move ) noexcept : boxed( *move ) {
+	template <typename _Ty, size_t _Sz, typename _Shift>
+	inline boxed<_Ty, _Sz, _Shift>::boxed( this_type &&move ) noexcept : boxed( *move ) {
 	}
 
-	template<typename _Ty, size_t _Sz>
-	inline boxed<_Ty, _Sz> &boxed<_Ty, _Sz>::operator=( const this_type &copy ) {
+	template <typename _Ty, size_t _Sz, typename _Shift>
+	inline boxed<_Ty, _Sz, _Shift> &boxed<_Ty, _Sz, _Shift>::operator=( const this_type &copy ) {
 		return operator=( *copy );
 	}
 
-	template<typename _Ty, size_t _Sz>
-	inline boxed<_Ty, _Sz> &boxed<_Ty, _Sz>::operator=( this_type &&move ) noexcept {
+	template <typename _Ty, size_t _Sz, typename _Shift>
+	inline boxed<_Ty, _Sz, _Shift> &boxed<_Ty, _Sz, _Shift>::operator=( this_type &&move ) noexcept {
 		return operator=( *move );
 	}
 
