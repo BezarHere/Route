@@ -6,10 +6,11 @@ class OpenGL
 public:
 	static constexpr struct {
 		unsigned major, minor;
-	} ContextVersion = { 4, 4 };
+	} ContextVersion = { 4, 0 };
 
 	static errno_t init();
 	static void close();
+	static SDL_GLContext create_context(SDL_Window *window );
 
 	static inline GLint query_int( const GLenum id ) {
 		GLint value = 0;
