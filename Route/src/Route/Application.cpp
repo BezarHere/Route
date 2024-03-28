@@ -3,9 +3,48 @@
 #include "Application.h"
 #include <thread>
 #include <mutex>
+#include "ResourceServer.h"
+#include "Image.h"
+
 
 namespace route
 {
+	struct Application::RSBC
+	{
+	public:
+
+		template <typename... _Tys>
+		static inline void execute( bool activate ) {
+			return activate ? open<_Tys...>() : close<_Tys...>();
+		}
+
+		template <typename _Ty>
+		static inline void open() {
+			ResourceServer<_Ty>::open();
+		}
+
+		template <typename _Ty>
+		static inline void close() {
+			ResourceServer<_Ty>::close();
+		}
+
+		// two single parameters for overloading (packed args are optional which is not overloaded)
+		template <typename _Ty, typename _Ey, typename... _Tys>
+		static inline void open() {
+			ResourceServer<_Ty>::open();
+			ResourceServer<_Ey>::open();
+			RSBC::open<_Tys...>();
+		}
+
+		// two single parameters for overloading (packed args are optional which is not overloaded)
+		template <typename _Ty, typename _Ey, typename... _Tys>
+		static inline void close() {
+			ResourceServer<_Ty>::close();
+			ResourceServer<_Ey>::close();
+			RSBC::close<_Tys...>();
+		}
+	};
+
 	struct Application::threading
 	{
 		std::thread update_thread;
@@ -27,6 +66,7 @@ namespace route
 
 	Application::Application( Window &window, Renderer &renderer )
 		: m_window{ window }, m_renderer{ renderer }, m_threading{ nullptr }, m_cache{ new cache() } {
+		_toggle_resource_servers( true );
 	}
 
 	Application::~Application() {
@@ -34,6 +74,7 @@ namespace route
 			delete m_threading;
 		if (m_cache)
 			delete m_cache;
+		_toggle_resource_servers( false );
 	}
 
 	errno_t Application::start() {
@@ -69,7 +110,7 @@ namespace route
 		std::cout << "Started _process\n";
 		while (m_window)
 		{
-			
+
 		}
 
 		std::cout << "Done _process\n";
@@ -99,6 +140,10 @@ namespace route
 				map.emplace_back( obj_i );
 			}
 		}
+	}
+
+	void Application::_toggle_resource_servers( bool new_state ) {
+		RSBC::execute<Image>( new_state );
 	}
 
 }
