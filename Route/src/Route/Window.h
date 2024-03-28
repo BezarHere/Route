@@ -17,8 +17,11 @@ namespace route
 		WindowFlag_AlwaysOnTop = 0x8000,
 	};
 
+	class Renderer;
+
 	class Window
 	{
+		friend Renderer;
 	public:
 
 		Window( const std::string &title,
