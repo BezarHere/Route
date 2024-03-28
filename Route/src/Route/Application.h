@@ -11,7 +11,7 @@ namespace route
 		virtual void operator()( Application & ) = 0;
 	};
 
-	struct EngineConfig
+	struct AppConfig
 	{
 		uint32_t max_frames_per_sec;
 		bool vsync;
@@ -19,6 +19,7 @@ namespace route
 
 	class Application
 	{
+		friend Renderer;
 	public:
 
 		Application( Window &window, Renderer &renderer );
@@ -52,8 +53,12 @@ namespace route
 		void _graphics();
 		void _gen_render_map();
 
+		static void _toggle_resource_servers(bool new_state);
+
 		Application( const Application & ) = delete;
 		Application &operator=( const Application & ) = delete;
+
+		struct RSBC;
 
 	private:
 		struct threading;
@@ -69,7 +74,7 @@ namespace route
 
 		std::unique_ptr<EngineHandle> m_handle;
 
-		EngineConfig m_config;
+		AppConfig m_config;
 
 		time_point_us m_last_frame;
 	};
