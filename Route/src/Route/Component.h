@@ -11,12 +11,22 @@ namespace route
 		virtual void added( Object &object ) = 0;
 		virtual void removed( Object &object ) = 0;
 		virtual void update( Object &object ) = 0;
-		virtual void draw( const Object &object ) const = 0;
 
 	};
 
 	struct ShapeComponent : public Component
 	{
+
+		inline void added( Object &object ) override {
+		}
+
+		inline void removed( Object &object ) override {
+		}
+
+		inline void update( Object &object ) override {
+		}
+
+
 	};
 
 	template <typename _Ty>
