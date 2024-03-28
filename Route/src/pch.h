@@ -11,9 +11,16 @@
 #include <string>
 #include <vector>
 
+#include "_opengl.h"
+
 using std::array;
 using std::vector;
 
-namespace route { }
+namespace route
+{
+}
 
 using namespace route;
+
+#define SDL_FNCHECK(call) \
+{ int err = (call); if (err) { char buf[256]{}; sprintf_s(buf, std::size(buf), "Failed to call " #call " at " __FILE__ ":%u, returned %d", __LINE__, err); Logger::write( buf, LogLevel::Error ); } }
