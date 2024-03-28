@@ -8,6 +8,16 @@ namespace route
 	{
 	public:
 
+		// increments every time the scene is changed (adding/removing/moving objects)
+		inline index_t change_counter() const {
+			return m_change_counter;
+		}
+
+		// object indices in order (first to last to be updated)
+		inline const vector<index_t> &order_indices() const {
+			return m_order;
+		}
+
 		inline index_t add_object( const object &obj, const index_t parent );
 
 		inline object &get_object( const index_t index ) {
@@ -66,6 +76,8 @@ namespace route
 		}
 
 	private:
+		// incremented every time this scene is changed (adding/removing/moving objects)
+		index_t m_change_counter;
 		vector<object> m_objects;
 		vector<index_t> m_roots;
 		vector<index_t> m_order;
@@ -76,6 +88,7 @@ namespace route
 		{
 			throw std::out_of_range( "parent" );
 		}
+		m_change_counter++;
 
 		const index_t index = m_objects.size();
 
@@ -132,6 +145,8 @@ namespace route
 		}
 
 		const size_t roots_count = m_roots.size();
+
+		// TODO: wtf? fix this asap
 		for (size_t i = roots_count - 1; i < roots_count; i--)
 		{
 			add_node_order( m_roots[ i ] );
