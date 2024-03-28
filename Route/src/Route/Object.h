@@ -4,7 +4,7 @@
 
 namespace route
 {
-	class NodeTree;
+	class Scene;
 	class Object;
 
 	using object_path = string;
@@ -17,14 +17,26 @@ namespace route
 		Object3D,
 	};
 
+	struct ObjectState
+	{
+
+		bool visible = true;
+		// having the 2d & 3d transforms
+		// cons: larger size
+		// pros: less headache
+		Transform2D _2d = {};
+		Transform3D _3d = {};
+		zindex_t zindex = {};
+	};
+
 	class Object
 	{
-		friend NodeTree;
+		friend Scene;
 	public:
 
 
-		inline Object( const ObjectType type )
-			: m_type{ type } {
+		inline Object( const ObjectType p_type )
+			: type{ p_type }, m_state{}, m_global_cache{} {
 		}
 
 		~Object() {
@@ -32,33 +44,42 @@ namespace route
 
 		inline void update( real_t deltatime );
 
-		inline index_t add_component( std::unique_ptr<Component> comp ) {
+		inline index_t add_component( std::unique_ptr<Component> &&comp ) {
 			m_components.emplace_back( comp.release() );
 			return m_components.size() - 1;
 		}
+
+		inline bool is_visible_globally() const {
+			return m_state.visible && m_global_cache.visible;
+		}
+
+		inline bool is_visible() const {
+			return m_state.visible;
+		}
+
+		const ObjectType type;
 	private:
 		void update_2d( real_t deltatime );
 		void update_3d( real_t deltatime );
 
 	private:
-
-		const ObjectType m_type;
-
 		//object_name m_name = "";
 		index_t m_parent = npos;
 		vector<index_t> m_children{};
-		vector<std::unique_ptr<Component>> m_components{};
+		vector<std::shared_ptr<Component>> m_components{};
 		bool m_active = true;
-		bool m_visible = true;
+
+		ObjectState m_state;
+		ObjectState m_global_cache;
 	};
 
 	inline void Object::update( real_t deltatime ) {
-		for (auto &comp : m_components)
+		for (const auto &comp : m_components)
 		{
 			comp->update( *this );
 		}
 
-		if (m_type == ObjectType::Object2D)
+		if (type == ObjectType::Object2D)
 		{
 			return update_2d( deltatime );
 		}
