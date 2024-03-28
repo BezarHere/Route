@@ -2,11 +2,16 @@
 #include "../pch.h"
 #include "ResourceServer.h"
 #include <list>
+#include "Logger.h"
 #include "Image.h"
+#include "Texture.h"
 
 
 namespace route
 {
+	template ResourceServer<Image>;
+	template ResourceServer<Texture>;
+
 
 	static constexpr RID ChunkBShift = 20;
 	static constexpr RID ChunkMask = ~((1u << ChunkBShift) - 1); // maximum possible number of chunks is 4096
@@ -170,7 +175,7 @@ namespace route
 		{
 			// TODO: type name in the error msg, please?
 			Logger::write( "from pop_resource: ResourceServer didn't initalize" );
-			return RIDnpos;
+			return;
 		}
 
 		const RIndex rindex = s_internal->get_rindex( rid );
@@ -194,7 +199,7 @@ namespace route
 		{
 			// TODO: type name in the error msg, please?
 			Logger::write( "from set_resource_name: ResourceServer didn't initalize" );
-			return RIDnpos;
+			return;
 		}
 
 		const RIndex rindex = s_internal->get_rindex( rid );
