@@ -21,6 +21,7 @@ namespace route
 		struct Internal;
 
 		static resource_type &get_resource( RID rid );
+		static RID add_resource( resource_type &&resource );
 		static RID add_resource( const resource_type &resource );
 		static void pop_resource( RID rid );
 

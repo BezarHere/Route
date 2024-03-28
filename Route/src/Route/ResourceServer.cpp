@@ -5,17 +5,27 @@
 #include "Logger.h"
 #include "Image.h"
 #include "Texture.h"
+#include "Material.h"
+#include "Shader.h"
 
 
 namespace route
 {
+	template ResourceServer<Resource>;
 	template ResourceServer<Image>;
 	template ResourceServer<Texture>;
+	template ResourceServer<Material>;
+	template ResourceServer<Shader>;
+
 
 
 	static constexpr RID ChunkBShift = 20;
 	static constexpr RID ChunkMask = ~((1u << ChunkBShift) - 1); // maximum possible number of chunks is 4096
 	static constexpr RID ElementMask = ~ChunkMask;
+
+	static int *g_SeedStartPtr = new int;
+	static RID g_GlobalSeedHashHole =
+		static_cast<RID>(_rotl64( 0x981faca1ULL ^ reinterpret_cast<uintptr_t>(g_SeedStartPtr), reinterpret_cast<uintptr_t>(g_SeedStartPtr) & 0x3fU ));
 
 	struct RIndex
 	{
@@ -34,8 +44,6 @@ namespace route
 
 	template<typename _Ty>
 	struct ResourceServer<_Ty>::Internal {
-
-
 
 		struct Element
 		{
@@ -119,11 +127,11 @@ namespace route
 		}
 
 		inline RIndex get_rindex( const RID rid ) const {
-			return { static_cast<uint16_t>(rid >> ChunkBShift), static_cast<uint16_t>(rid & ElementMask) };
+			return { static_cast<uint16_t>((rid ^ seed) >> ChunkBShift), static_cast<uint16_t>((rid ^ seed) & ElementMask) };
 		}
 
 		inline RID to_rid( const RIndex rindex ) const {
-			return ((rindex.chunk << ChunkBShift) | (rindex.element & ElementMask));
+			return ((rindex.chunk << ChunkBShift) | (rindex.element & ElementMask)) ^ seed;
 		}
 
 		inline _Ty &get_resource( const RID rid ) {
@@ -131,6 +139,60 @@ namespace route
 			return *reinterpret_cast<_Ty *>(chunks[ rindex.chunk ].elements[ rindex.element ].mem);
 		}
 
+		template <typename _Ey>
+		inline errno_t _add_resource_unchecked( _Ey resource ) {
+			using raw_ey_type = std::_Remove_cvref_t<_Ey>;
+
+			const index_t chunk_index = unlocked_chunk_or_create();
+
+			Chunk &chunk = chunks[ chunk_index ];
+			const index_t add_index = chunk.counter();
+
+			// after the last filled element is a filled element????
+			// something fucked up, kill me
+			if (chunk.elements[ add_index ].flags & EFlag_Init)
+			{
+				return RIDnpos;
+			}
+
+			chunk.inc_counter(); /* can we afford to check for de-syncs?? */
+
+			new (chunk.elements[ add_index ].mem) raw_ey_type( resource );
+			chunk.elements[ add_index ].flags = EFlag_Init;
+
+			return to_rid( { static_cast<uint16_t>(chunk_index), static_cast<uint16_t>(add_index) } );
+		}
+
+		template <typename _Ey>
+		inline errno_t add_resource( _Ey resource ) {
+			using raw_ey_type = std::_Remove_cvref_t<_Ey>;
+			static_assert(sizeof( raw_ey_type ) <= Element::value_size, "Type too big");
+			static_assert(is_related_v<resource_type, raw_ey_type>, "Unrelated type");
+
+			// checking for exceptions
+			if constexpr (std::is_lvalue_reference_v<_Ey> && !std::is_copy_constructible_v<raw_ey_type>)
+			{
+				char msg[ 512 ]{};
+				sprintf_s( msg, "illegal construct of type %s: can't be copy-constructible", typeid(raw_ey_type).name() );
+				std::_Xruntime_error( msg );
+			}
+			else if constexpr (std::is_rvalue_reference_v<_Ey> && !std::is_move_constructible_v<raw_ey_type>)
+			{
+				char msg[ 512 ]{};
+				sprintf_s( msg, "illegal construct of type %s: can't be move-constructible", typeid(raw_ey_type).name() );
+				std::_Xruntime_error( msg );
+			}
+			else
+			{
+				// if the resource is an rvalue, then move it to keep it an rvalue
+				if constexpr (std::is_rvalue_reference_v<_Ey>)
+					return _add_resource_unchecked<_Ey>( std::move( resource ) );
+				else
+					return _add_resource_unchecked<_Ey>( resource );
+			}
+		}
+
+		const RID seed = (g_GlobalSeedHashHole += g_GlobalSeedHashHole * 0xc14a + 1);
 		size_t ref_counter;
 		vector<Chunk> chunks{};
 	};
@@ -142,6 +204,18 @@ namespace route
 	}
 
 	template<typename _Ty>
+	RID ResourceServer<_Ty>::add_resource( resource_type &&resource ) {
+		if (!s_internal)
+		{
+			// TODO: type name in the error msg, please?
+			Logger::write( "from add_resource: ResourceServer didn't initalize" );
+			return RIDnpos;
+		}
+
+		return s_internal->add_resource<resource_type &&>( std::move( resource ) );
+	}
+
+	template<typename _Ty>
 	RID ResourceServer<_Ty>::add_resource( const resource_type &resource ) {
 		if (!s_internal)
 		{
@@ -150,23 +224,7 @@ namespace route
 			return RIDnpos;
 		}
 
-		const index_t chunk_index = s_internal->unlocked_chunk_or_create();
-
-		typename Internal::Chunk &chunk = s_internal->chunks[ chunk_index ];
-		const index_t add_index = chunk.counter();
-
-		// after the last filled element is a filled element????
-		// something fucked up, kill me
-		if (chunk.elements[ add_index ].flags & EFlag_Init)
-		{
-			return RIDnpos;
-		}
-
-		chunk.inc_counter(); /* can we afford to check for de-syncs?? */
-		new (chunk.elements[ add_index ].mem) resource_type( resource );
-		chunk.elements[ add_index ].flags = EFlag_Init;
-
-		return s_internal->to_rid( { static_cast<uint16_t>(chunk_index), static_cast<uint16_t>(add_index) } );
+		return s_internal->add_resource<const resource_type &>( resource );
 	}
 
 	template<typename _Ty>
@@ -221,6 +279,11 @@ namespace route
 
 		s_internal = new Internal();
 		s_internal->ref_counter = 1;
+
+#ifdef VERBOSE
+		std::cout << "VERBOSE: " << typeid(ResourceServer<_Ty>).name() << " opened\n";
+#endif
+
 		return 0;
 	}
 
@@ -252,8 +315,17 @@ namespace route
 		// no more references to this resource server
 		if (!s_internal->ref_counter)
 		{
+#ifdef VERBOSE
+			size_t internals_size = sizeof( Internal );
+			internals_size += sizeof( Internal::Chunk ) * s_internal->chunks.size();
+#endif
+
 			delete s_internal;
 			s_internal = nullptr;
+
+#ifdef VERBOSE
+			std::cout << "VERBOSE: " << typeid(ResourceServer<_Ty>).name() << " closing (" << (internals_size >> 10) << " kb)\n";
+#endif
 
 			// the internals are deleted
 			return true;
