@@ -13,8 +13,7 @@
 
 #include "_opengl.h"
 
-using std::array;
-using std::vector;
+#define VERBOSE
 
 namespace route
 {
