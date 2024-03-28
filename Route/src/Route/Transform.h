@@ -12,7 +12,7 @@ namespace route
 	{
 	public:
 		using value_type = float_t;
-		using vector_type = BaseVector2Template<value_type>;
+		using vector_type = TVector2<value_type>;
 
 		union transform_element3x2
 		{
@@ -318,7 +318,7 @@ namespace route
 	{
 	public:
 		using value_type = float_t;
-		using vector_type = BaseVector2Template<value_type>;
+		using vector_type = TVector2<value_type>;
 
 		union transform_element4x3
 		{

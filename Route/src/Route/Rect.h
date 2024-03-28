@@ -8,7 +8,7 @@ namespace route
 	{
 		using value_type = _T;
 		using this_type = BaseRect2Template<_T>;
-		using vector_type = BaseVector2Template<_T>;
+		using vector_type = TVector2<_T>;
 
 		inline constexpr BaseRect2Template( value_type x_, value_type y_, value_type w_, value_type h_ ) noexcept
 			: x{ x_ }, y{ y_ }, w{ w_ }, h{ h_ } {
@@ -90,7 +90,7 @@ namespace route
 		}
 
 		template <typename _U>
-		inline constexpr bool contains( BaseVector2Template<_U> point ) const {
+		inline constexpr bool contains( TVector2<_U> point ) const {
 			return contains( vector_type( point ) );
 		}
 
