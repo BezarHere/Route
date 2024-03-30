@@ -9,7 +9,7 @@ namespace route
 	public:
 
 		// increments every time the scene is changed (adding/removing/moving objects)
-		inline index_t change_counter() const {
+		inline refc_t change_counter() const {
 			return m_change_counter;
 		}
 
@@ -77,7 +77,7 @@ namespace route
 
 	private:
 		// incremented every time this scene is changed (adding/removing/moving objects)
-		index_t m_change_counter;
+		refc_t m_change_counter;
 		vector<object> m_objects;
 		vector<index_t> m_roots;
 		vector<index_t> m_order;
