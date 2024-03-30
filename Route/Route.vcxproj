@@ -114,7 +114,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -137,7 +137,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -250,6 +250,7 @@
     <ClInclude Include="src\Route.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Route\Bases.h" />
+    <ClInclude Include="src\Route\Chunklist.h" />
     <ClInclude Include="src\Route\Boxed.h" />
     <ClInclude Include="src\Route\Color.h" />
     <ClInclude Include="src\Route\Component.h" />
@@ -257,6 +258,7 @@
     <ClInclude Include="src\Route\Logger.h" />
     <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
+    <ClInclude Include="src\Route\RenderServer.h" />
     <ClInclude Include="src\Route\Resource.h" />
     <ClInclude Include="src\Route\ResourceServer.h" />
     <ClInclude Include="src\Route\Scene.h" />
@@ -266,6 +268,7 @@
     <ClInclude Include="src\Route\Renderer.h" />
     <ClInclude Include="src\Route\Shader.h" />
     <ClInclude Include="src\Route\Primitives.h" />
+    <ClInclude Include="src\Route\ArrayView.h" />
     <ClInclude Include="src\Route\Texture.h" />
     <ClInclude Include="src\Route\Transform.h" />
     <ClInclude Include="src\Route\Vector.h" />
@@ -289,6 +292,7 @@
     <ClCompile Include="src\Route\Renderer.cpp" />
     <ClCompile Include="src\Route\ResourceServer.cpp" />
     <ClCompile Include="src\Route\Texture.cpp" />
+    <ClCompile Include="src\Route\Vertex.cpp" />
     <ClCompile Include="src\Route\Window.cpp" />
     <ClCompile Include="src\_opengl.cpp" />
   </ItemGroup>
