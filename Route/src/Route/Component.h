@@ -12,6 +12,9 @@ namespace route
 		virtual void removed( Object &object ) = 0;
 		virtual void update( Object &object ) = 0;
 
+		virtual ~Component() {
+		};
+
 	};
 
 	struct ShapeComponent : public Component
