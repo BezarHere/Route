@@ -28,12 +28,14 @@ namespace route
 	using time_point_ns = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
 	typedef size_t index_t;
+	typedef uintptr_t refc_t;
 	_INLINE_VAR constexpr index_t npos = (size_t)-1;
 
 	_INLINE_VAR constexpr real_t Pi = 3.1415926f;
 	_INLINE_VAR constexpr real_t Tau = Pi * 2.f;
 	_INLINE_VAR constexpr real_t E = 2.7182818f;
 	_INLINE_VAR constexpr real_t Epsilon = 1e-4f;
+
 
 	// is it pure? not a reference nor a const nor a volatile type and not the void type
 	template <typename _Ty>
@@ -65,6 +67,15 @@ namespace route
 		return std::is_same_v<_Ty, _Ey> &&is_all<_Ty, _Vargs>();
 	}
 
+	template <typename _Ty, typename... _Vargs>
+	_INLINE_VAR constexpr auto is_any_v = is_any<_Ty, _Vargs...>();
+
+	template <typename _Ty, typename... _Vargs>
+	_INLINE_VAR constexpr auto is_all_v = is_all<_Ty, _Vargs...>();
+
+	template <typename _Ty>
+	_INLINE_VAR constexpr auto is_index_v = is_any_v<_Ty, uint8_t, uint16_t, uint32_t, uint64_t>;
+
 	template <typename _Ty>
 	inline static constexpr size_t max_sizeof() {
 		return sizeof( _Ty );
@@ -73,6 +84,52 @@ namespace route
 	template <typename _Ty, typename... _Types>
 	inline static constexpr size_t max_sizeof() {
 		return std::max( sizeof( _Ty ), max_sizeof<_Types...>() );
+	}
+
+	// From The Godot Game Engine, modified by zahr abdullatif
+	// Function to find the next power of 2 to an integer
+	template <typename _Ty>
+	FORCE_INLINE constexpr _Ty next_pow2( _Ty x ) {
+		if (x == 0)
+		{
+			return 0;
+		}
+
+		--x;
+
+		for (uint32_t i = 1; i < (sizeof( _Ty ) * 8); i <<= 1)
+			x |= x >> i;
+
+		return ++x;
+	}
+
+	// From The Godot Game Engine, modified by zahr abdullatif
+	// Function to find the previous power of 2 to an integer.
+	template <typename _Ty>
+	FORCE_INLINE constexpr _Ty prev_pow2( _Ty x ) {
+		for (uint32_t i = 1; i < (sizeof( _Ty ) * 8); i <<= 1)
+			x |= x >> i;
+		return x - (x >> 1);
+	}
+
+	// From The Godot Game Engine, modified by zahr abdullatif
+	// Function to find the closest power of 2 to an integer.
+	template <typename _Ty>
+	FORCE_INLINE constexpr _Ty closest_pow2( const _Ty x ) {
+		const _Ty nx = next_pow2( x );
+		const _Ty px = prev_pow2( x );
+		return (nx - x) > (x - px) ? px : nx;
+	}
+
+	// Function to find the closest power of 2 to an integer.
+	template <typename _Ty>
+	FORCE_INLINE constexpr _Ty floor_log2( _Ty x ) {
+		for (int16_t i = (sizeof( _Ty ) * 8) - 1; i >= 0; i--)
+		{
+			if (x & (_Ty( 1 ) << i))
+				return i;
+		}
+		return 0;
 	}
 
 	struct nothing
