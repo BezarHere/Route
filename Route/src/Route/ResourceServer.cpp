@@ -12,7 +12,6 @@
 namespace route
 {
 	template ResourceServer<Resource>;
-	template ResourceServer<Image>;
 	template ResourceServer<Texture>;
 	template ResourceServer<Material>;
 	template ResourceServer<Shader>;
@@ -44,6 +43,7 @@ namespace route
 
 	template<typename _Ty>
 	struct ResourceServer<_Ty>::Internal {
+		static_assert(std::is_same_v<Resource, _Ty> || std::is_base_of_v<Resource, _Ty>, "_TY should derive from Resource");
 
 		struct Element
 		{
@@ -270,7 +270,7 @@ namespace route
 	}
 
 	template<typename _Ty>
-	errno_t ResourceServer<_Ty>::open() {
+	errno_t ResourceServer<_Ty>::_open() {
 		if (s_internal)
 		{
 			s_internal->ref_counter++;
@@ -288,14 +288,14 @@ namespace route
 	}
 
 	template<typename _Ty>
-	bool ResourceServer<_Ty>::close() {
+	bool ResourceServer<_Ty>::_close() {
 		// no internals
 		if (!s_internal)
 		{
 			char buf[ 256 ]{};
 			(void)sprintf_s( buf, "%s already closed!", typeid(ResourceServer<_Ty>).name() );
 			std::_Xruntime_error( buf );
-			return false;
+			//return false;
 		}
 
 		// was the ref_counter zero to overflow? then why isn't it deleted??
@@ -309,7 +309,7 @@ namespace route
 				s_internal->ref_counter
 			);
 			std::_Xruntime_error( buf );
-			return false;
+			//return false;
 		}
 
 		// no more references to this resource server
