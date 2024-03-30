@@ -33,9 +33,9 @@ namespace route
 	private:
 
 		/// @note increments the ref-counter if the server is already running
-		static errno_t open();
+		static errno_t _open();
 		/// @returns true if the server closed, false otherwise (decremented ref counter)
-		static bool close();
+		static bool _close();
 	private:
 		static Internal *s_internal;
 	};
