@@ -42,7 +42,7 @@ namespace route
 
 	constexpr int NormalizedVInputTypeBit = 0x10000;
 
-	enum class VertexInputType
+	enum class VertexInputType : uint32_t
 	{
 		Byte = 0x1400,
 		UnsignedByte,
@@ -63,7 +63,17 @@ namespace route
 		Double = 0x140A
 	};
 
-	enum class VertexInputSize
+	enum class VertexIndexType : uint16_t
+	{
+		Byte = VertexInputType::Byte,
+		Short = VertexInputType::Short,
+		Int = VertexInputType::Int,
+		UnsignedByte = VertexInputType::UnsignedByte,
+		UnsignedShort = VertexInputType::UnsignedShort,
+		UnsignedInt = VertexInputType::UnsignedInt,
+	};
+
+	enum class VertexInputSize : uint8_t
 	{
 		Single = 1,
 
@@ -79,6 +89,7 @@ namespace route
 		RGBA = 4,
 		Color = 4
 	};
+
 
 	struct VInputAttribute
 	{
