@@ -3,7 +3,6 @@
 #include "Logger.h"
 #include "Renderer.h"
 
-using LPSDLWindow = SDL_Window *;
 
 namespace route
 {
@@ -20,15 +19,21 @@ namespace route
 			Logger::write( "Failed to create context for Renderer", LogLevel::Error );
 			return;
 		}
+		
+		m_state = new State{};
 	}
 
 	Renderer::~Renderer() {
-		// TODO: close OpenGL
-		SDL_GL_DeleteContext( m_context );
+		const auto current_context = OpenGL::get_context();
+		const auto current_window = OpenGL::get_context_window();
+		OpenGL::set_context( m_window.m_handle, m_context );
+		delete m_state;
+		OpenGL::delete_context( m_context );
+		OpenGL::set_context( current_window, current_context );
 	}
 
 	void Renderer::render( const Application &app ) {
-		SDL_FNCHECK( SDL_GL_MakeCurrent( static_cast<LPSDLWindow>(m_window.m_handle), m_context ) );
+		SDL_FNCHECK_V( OpenGL::set_context( m_window.m_handle, m_context ), return );
 
 		constexpr GLfloat verts[]
 		{
