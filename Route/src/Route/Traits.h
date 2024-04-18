@@ -1,6 +1,9 @@
 #pragma once
 #include "Transform.h"
 
+#pragma warning(push)
+#pragma warning(disable:4624)
+
 namespace route
 {
 	namespace traits
@@ -30,3 +33,5 @@ namespace route
 		};
 	}
 }
+
+#pragma warning(pop)
