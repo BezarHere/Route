@@ -9,6 +9,8 @@ namespace route
 	struct EngineHandle
 	{
 		virtual void operator()( Application & ) = 0;
+		virtual ~EngineHandle() {
+		};
 	};
 
 	struct AppConfig
@@ -21,6 +23,7 @@ namespace route
 	{
 		friend Renderer;
 	public:
+		struct TRSH;
 
 		Application( Window &window, Renderer &renderer );
 		~Application();
@@ -53,13 +56,16 @@ namespace route
 		void _graphics();
 		void _gen_render_map();
 
-		static void _toggle_resource_servers(bool new_state);
+		/*
+		* _toggle_resource_servers() is defined in the ResourceServer.cpp
+		* only reason for being defined there is proper template instancing
+		*/
+		static void _toggle_resource_servers( uint32_t flags );
 
 		Application( const Application & ) = delete;
 		Application &operator=( const Application & ) = delete;
 
-		struct RSBC;
-
+		
 	private:
 		struct threading;
 		struct cache;
