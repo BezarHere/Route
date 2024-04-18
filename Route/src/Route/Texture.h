@@ -12,7 +12,7 @@ namespace route
 		CubeMap,
 	};
 
-	typedef unsigned TextureID;
+	typedef vpid_t TextureID;
 
 	class Texture : public Resource
 	{
