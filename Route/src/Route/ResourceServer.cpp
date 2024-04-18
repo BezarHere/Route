@@ -1,23 +1,23 @@
 #include "pch.h"
 #include "../pch.h"
 #include "ResourceServer.h"
-#include <list>
+#include "Application.h"
 #include "Logger.h"
 #include "Image.h"
 #include "Texture.h"
 #include "Material.h"
 #include "Shader.h"
+#include "StorageBuffer.h"
 
+#include <list>
+#include "Performance.h"
+
+/*
+* BOILER PLATE
+*/
 
 namespace route
 {
-	template ResourceServer<Resource>;
-	template ResourceServer<Texture>;
-	template ResourceServer<Material>;
-	template ResourceServer<Shader>;
-
-
-
 	static constexpr RID ChunkBShift = 20;
 	static constexpr RID ChunkMask = ~((1u << ChunkBShift) - 1); // maximum possible number of chunks is 4096
 	static constexpr RID ElementMask = ~ChunkMask;
@@ -25,6 +25,66 @@ namespace route
 	static int *g_SeedStartPtr = new int;
 	static RID g_GlobalSeedHashHole =
 		static_cast<RID>(_rotl64( 0x981faca1ULL ^ reinterpret_cast<uintptr_t>(g_SeedStartPtr), reinterpret_cast<uintptr_t>(g_SeedStartPtr) & 0x3fU ));
+
+	struct Application::TRSH
+	{
+	public:
+		template <typename... _Tys>
+		static inline void execute( bool state ) {
+			return state ? open<_Tys...>() : close<_Tys...>();
+		}
+
+		static inline void execute( bool state );
+
+		template <typename _Ty>
+		static inline void open() {
+			ResourceServer<_Ty>::_open();
+		}
+
+		template <typename _Ty>
+		static inline void close() {
+			ResourceServer<_Ty>::_close();
+		}
+
+		// two single parameters for overloading (packed args are optional which is not overloaded)
+		template <typename _Ty, typename _Ey, typename... _Tys>
+		static inline void open() {
+			ResourceServer<_Ty>::_open();
+			ResourceServer<_Ey>::_open();
+			if constexpr (sizeof...(_Tys))
+				TRSH::open<_Tys...>();
+		}
+
+		// two single parameters for overloading (packed args are optional which is not overloaded)
+		template <typename _Ty, typename _Ey, typename... _Tys>
+		static inline void close() {
+			ResourceServer<_Ty>::_close();
+			ResourceServer<_Ey>::_close();
+			if constexpr (sizeof...(_Tys))
+				TRSH::close<_Tys...>();
+		}
+	};
+
+	inline void Application::TRSH::execute( bool state ) {
+		const auto mem = Performance::get_memory_usage();
+
+		/*
+		* Template defined below are which resource servers are to be template instanced
+		* Not the best place to put such thing, but it works well
+		*/
+		execute<Resource, Texture, Material, Shader, StorageBuffer>( state );
+
+		std::cout << "mem usage diff after " << (state ? "running" : "closing") << " the ResServers: "
+			<< (Performance::get_memory_usage() - mem) << '\n';
+
+		return;
+	}
+
+	void Application::_toggle_resource_servers( uint32_t flags ) {
+		// TODO: add named flags
+		const bool tobe_opened = flags & 1;
+		return Application::TRSH::execute( tobe_opened );
+	}
 
 	struct RIndex
 	{
@@ -40,6 +100,14 @@ namespace route
 		EFlag_None = 0,
 		EFlag_Init = 1,
 	};
+}
+
+/*
+* ACTUAL STUFF
+*/
+
+namespace route
+{
 
 	template<typename _Ty>
 	struct ResourceServer<_Ty>::Internal {
@@ -99,6 +167,11 @@ namespace route
 			bool m_locked = false;
 			uintptr_t m_elements_counter = 0;
 		};
+
+		inline Internal() {
+			// magic nomber, just for now
+			chunks.reserve( 32U );
+		}
 
 		inline index_t first_unlocked_chunk() const {
 			for (index_t i = 0; i < chunks.size(); i++)
