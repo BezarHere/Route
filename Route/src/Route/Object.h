@@ -1,11 +1,13 @@
 #pragma once
-#include "Transform.h"
 #include "Component.h"
+#include "Traits.h"
+#include "Memblock.h"
 
 namespace route
 {
 	class Scene;
 	class Object;
+	struct Component;
 
 	using object_path = string;
 	using object_name = string;
@@ -17,27 +19,30 @@ namespace route
 		Object3D,
 	};
 
-	struct ObjectState
+	template <typename _Traits>
+	struct TObjectState
 	{
-
+		using transform_type = typename _Traits::transform;
 		bool visible = true;
-		// having the 2d & 3d transforms
-		// cons: larger size
-		// pros: less headache
-		Transform2D _2d = {};
-		Transform3D _3d = {};
-		zindex_t zindex = {};
+		transform_type xform = {};
+		typename _Traits::zindex zindex = {};
 	};
+	using ObjectState2D = TObjectState<traits::Impl2D>;
+	using ObjectState3D = TObjectState<traits::Impl3D>;
 
 	class Object
 	{
 		friend Scene;
 	public:
+		using State = Memblock<ObjectState2D, ObjectState3D>;
 
 
 		inline Object( const ObjectType p_type )
 			: type{ p_type }, m_state{}, m_global_cache{} {
 		}
+
+		Object( const Object &obj );
+		Object &operator=( const Object &obj );
 
 		~Object() {
 		}
@@ -50,11 +55,11 @@ namespace route
 		}
 
 		inline bool is_visible_globally() const {
-			return m_state.visible && m_global_cache.visible;
+			return m_state.get().visible && m_global_cache.get().visible;
 		}
 
 		inline bool is_visible() const {
-			return m_state.visible;
+			return m_state.get().visible;
 		}
 
 		const ObjectType type;
@@ -63,28 +68,18 @@ namespace route
 		void update_3d( real_t deltatime );
 
 	private:
+
 		//object_name m_name = "";
 		index_t m_parent = npos;
 		vector<index_t> m_children{};
-		vector<std::shared_ptr<Component>> m_components{};
+		vector<std::unique_ptr<Component>> m_components{};
 		bool m_active = true;
 
-		ObjectState m_state;
-		ObjectState m_global_cache;
+		State m_state;
+		State m_global_cache;
 	};
 
-	inline void Object::update( real_t deltatime ) {
-		for (const auto &comp : m_components)
-		{
-			comp->update( *this );
-		}
 
-		if (type == ObjectType::Object2D)
-		{
-			return update_2d( deltatime );
-		}
-		return update_3d( deltatime );
-	}
 
 	using object = Object;
 
