@@ -15,10 +15,11 @@ namespace route
 		friend Application;
 		friend Renderer;
 	public:
+		struct Internal;
+
 		using resource_type = _Ty;
 		using resource_name_char = char;
 		static constexpr size_t ResourceNameMaxLn = 128;
-		struct Internal;
 
 		static resource_type &get_resource( RID rid );
 		static RID add_resource( resource_type &&resource );
@@ -31,7 +32,6 @@ namespace route
 		static void set_resource_name( RID rid, const resource_name_char *name );
 
 	private:
-
 		/// @note increments the ref-counter if the server is already running
 		static errno_t _open();
 		/// @returns true if the server closed, false otherwise (decremented ref counter)
@@ -39,7 +39,5 @@ namespace route
 	private:
 		static Internal *s_internal;
 	};
-
-
 
 }
