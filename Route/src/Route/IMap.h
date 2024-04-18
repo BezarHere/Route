@@ -1,39 +1,84 @@
 #pragma once
 #include "Bases.h"
-#include <algorithm>
+#include <map>
 
 namespace route
 {
-	template <typename _Ky, size_t _BkCn = 64ULL>
-	struct imap_traits
+	template <typename _Cnt>
+	class imap_iterator
 	{
-		using key_type = intptr_t;
-		using compare = std::less<key_type>;
-		static constexpr size_t buckets_count = _BkCn;
+		using this_type = imap_iterator<_Cnt>;
+		using container_type = _Cnt;
+		using value_type = typename container_type::kv_pair;
+		using bucket_type = typename container_type::bucket;
+		using size_type = typename container_type::size_type;
+
+		inline this_type &operator--() {
+			if (--m_pos.first >= m_data[ m_pos.second ].data() + m_data[ m_pos.second ].size())
+			{
+				--m_pos.second;
+				m_pos.first = m_data[ m_pos.second ].end()._Ptr;
+			}
+			return *this;
+		}
+
+		inline this_type &operator++() {
+			if (++m_pos.first >= m_data[ m_pos.second ].data() + m_data[ m_pos.second ].size())
+			{
+				++m_pos.second;
+				m_pos.first = m_data[ m_pos.second ].data();
+			}
+			return *this;
+		}
+
+		inline value_type &operator*() {
+			return *m_pos.first;
+		}
+
+		inline value_type *operator->() {
+			return m_pos.first;
+		}
+
+	private:
+		std::pair<value_type *, size_type> m_pos;
+		bucket_type *const m_data;
 	};
 
-	/// @brief am ordered map indexed my a integers only, useful for non-uniform indexing
+	template <typename _Ky, size_t _BkCn = 16ULL>
+	struct imap_traits
+	{
+		using key_type = int32_t;
+		using compare = std::less<key_type>;
+		static constexpr size_t buckets_count = _BkCn;
+		static constexpr key_type key_hash_mask = static_cast<key_type>(0xF1AC8614E6014B1CULL); /* weak but cheap */
+	};
+
+	/// @brief an ordered map indexed by integers only, useful for non-uniform indexing
 	/// @tparam _Ty the value type
 	template <typename _Ty, typename _Traits = imap_traits<_Ty>>
 	class imap
 	{
 	public:
+		using this_type = imap<_Ty, _Traits>;
 		using traits = _Traits;
 		using key_type = typename traits::key_type;
 		using value_type = _Ty;
 		using size_type = size_t;
 		using compare = typename traits::compare;
+		using kv_pair = std::pair<key_type, value_type>;
+		using bucket = vector<kv_pair>;
 		static constexpr size_type buckets_count = next_pow2( size_type( traits::buckets_count ) );
 		static constexpr size_type buckets_count_shift = floor_log2( buckets_count );
 
 		static_assert(std::is_integral_v<key_type>, "Only supports integral key-types");
 
-	private:
-		using kv_pair = std::pair<key_type, value_type>;
-		using bucket = vector<kv_pair>;
+		using iterator = imap_iterator<this_type>;
+		//using const_iterator = const_imap_iterator;
 
+	private:
 		static FORCE_INLINE size_type _bucket_pos( const key_type index ) {
-			return index >> buckets_count_shift;
+			constexpr key_type mask = (key_type( 1 ) << buckets_count_shift) - 1;
+			return ((index >> buckets_count_shift) ^ (_rotl64( index, buckets_count_shift )) ^ traits::key_hash_mask) & mask;
 		}
 
 		// binary search
@@ -88,12 +133,9 @@ namespace route
 		// a viable index to insert a new entry with the key `key`
 		static inline constexpr
 			index_t _index_bound( const kv_pair *data, const size_type length, const key_type key ) {
-			if (!data)
-				return npos;
-
-			// empty data, insert first entry
-			if (!length)
-				return 0;
+			// empty data or null data (maybe the bucket hasn't bee initalized)
+			if (!data || !length)
+				return 0; // insert first entry
 
 			// Smart compilers optimize this (especially if it's an empty object)
 			const compare comp{};
@@ -110,14 +152,20 @@ namespace route
 				// key (may) can be AFTER or AT the current index
 				if (!comp( key, data[ index ].first ))
 				{
-					// the key == key at index, therefor, it can be at index
+					// the key == key at index
+					// duplicates are illagle, return npos
 					if (key == data[ index ].first)
-						return index;
+						return npos;
 
 					// there is a next index, and the key can be before the next index
 					// return next index (pushing any val at i + 1 to i + 2)
 					if (index < length - 1 && comp( key, data[ index + 1 ].first ))
 						return index + 1;
+
+					// we need to after current entry, but the current entry is the LAST entry
+					// push it after the last entry (back of the bucket)
+					if (index == length - 1)
+						return length; // index + 1
 
 					// can put the key after or at the current index
 					// advance window/start pos
@@ -173,19 +221,58 @@ namespace route
 		}
 
 		template <typename... _VA>
-		inline value_type &emplace( const key_type key, _VA&&... args ) {
+		inline value_type &try_emplace( const key_type key, _VA&&... args ) {
 			const index_t pos = _bucket_pos( key );
 			bucket &bucket = m_buckets[ pos ];
 			const index_t insert_index = _index_bound( bucket.data(), bucket.size(), key );
 
 			// either the bucket is un-ordered or something has been fucked
 			if (insert_index == npos)
-				std::_Xruntime_error
+				return at( key );
+
+			return bucket.insert( bucket.begin() + insert_index, { key, value_type{ std::forward<_VA>( args )... } } )->second;
+		}
+
+		inline value_type &add( const key_type key, const value_type &value ) {
+			const index_t pos = _bucket_pos( key );
+			bucket &bucket = m_buckets[ pos ];
+			const index_t insert_index = _index_bound( bucket.data(), bucket.size(), key );
+
+			// either the bucket is un-ordered or something has been fucked
+			if (insert_index == npos)
+				return at( key );
+
+			return bucket.insert( bucket.begin() + insert_index, { key, value } )->second;
+		}
+
+		inline value_type &add( const key_type key, value_type &&value ) {
+			const index_t pos = _bucket_pos( key );
+			bucket &bucket = m_buckets[ pos ];
+			const index_t insert_index = _index_bound( bucket.data(), bucket.size(), key );
+
+			// either the bucket is un-ordered or something has been fucked
+			if (insert_index == npos)
+				std::_Xruntime_error( "Invalid/npos insert index to add" );
+
+			return bucket.insert( bucket.begin() + insert_index, { key, value } )->second;
+		}
+
+		// TODO: return iterator
+		inline void remove( const key_type key ) {
+			const index_t pos = _bucket_pos( key );
+			bucket &bucket = m_buckets[ pos ];
+			const index_t index = _search( bucket.data(), bucket.size(), key );
+			if (index == npos)
+				return; /* entry doesn't exist, should we throw an exception? */
+
+			bucket.erase( bucket.begin() + index );
+		}
+
+		inline bool contains( const key_type key ) const {
+			return _find( key ) != nullptr;
 		}
 
 		inline value_type &operator[]( const key_type key ) {
-
-
 			return;
 		}
 
