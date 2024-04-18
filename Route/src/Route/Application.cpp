@@ -8,53 +8,17 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Shader.h"
+#include "Performance.h"
 
 
 namespace route
 {
-	struct Application::RSBC
-	{
-	public:
-
-		template <typename... _Tys>
-		static inline void execute( bool activate ) {
-			return activate ? open<_Tys...>() : close<_Tys...>();
-		}
-
-		template <typename _Ty>
-		static inline void open() {
-			ResourceServer<_Ty>::open();
-		}
-
-		template <typename _Ty>
-		static inline void close() {
-			ResourceServer<_Ty>::close();
-		}
-
-		// two single parameters for overloading (packed args are optional which is not overloaded)
-		template <typename _Ty, typename _Ey, typename... _Tys>
-		static inline void open() {
-			ResourceServer<_Ty>::open();
-			ResourceServer<_Ey>::open();
-			if constexpr (sizeof...(_Tys))
-				RSBC::open<_Tys...>();
-		}
-
-		// two single parameters for overloading (packed args are optional which is not overloaded)
-		template <typename _Ty, typename _Ey, typename... _Tys>
-		static inline void close() {
-			ResourceServer<_Ty>::close();
-			ResourceServer<_Ey>::close();
-			if constexpr (sizeof...(_Tys))
-				RSBC::close<_Tys...>();
-		}
-	};
 
 	struct Application::threading
 	{
+		// for updating caches
+		std::thread recahe_thread;
 		std::thread update_thread;
-		std::mutex loc;
-		std::atomic_bool x;
 	};
 
 	struct Application::cache
@@ -115,7 +79,7 @@ namespace route
 		std::cout << "Started _process\n";
 		while (m_window)
 		{
-
+			std::this_thread::sleep_for( milliseconds( 20 ) );
 		}
 
 		std::cout << "Done _process\n";
@@ -147,8 +111,6 @@ namespace route
 		}
 	}
 
-	void Application::_toggle_resource_servers( bool new_state ) {
-		RSBC::execute<Resource, Image, Texture, Material, Shader>( new_state );
-	}
+
 
 }
