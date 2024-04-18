@@ -21,14 +21,24 @@ namespace route
 	using std::vector;
 	using std::string;
 
+	template <typename _Ty>
+	using pair = std::pair<_Ty, _Ty>;
+
 	typedef float real_t;
 
-	using time_point_ms = std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds>;
-	using time_point_us = std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds>;
-	using time_point_ns = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
+	using std::chrono::milliseconds;
+	using std::chrono::microseconds;
+	using std::chrono::nanoseconds;
+
+	using time_point_ms = std::chrono::time_point<std::chrono::steady_clock, milliseconds>;
+	using time_point_us = std::chrono::time_point<std::chrono::steady_clock, microseconds>;
+	using time_point_ns = std::chrono::time_point<std::chrono::steady_clock, nanoseconds>;
+
+
 
 	typedef size_t index_t;
 	typedef uintptr_t refc_t;
+	typedef uintptr_t vpid_t; /* virtual pointer id, can substitute a pointer or an index in a state map */
 	_INLINE_VAR constexpr index_t npos = (size_t)-1;
 
 	_INLINE_VAR constexpr real_t Pi = 3.1415926f;
@@ -47,14 +57,18 @@ namespace route
 	_INLINE_VAR constexpr bool is_related_v =
 		std::is_base_of_v<_To, _With> || std::is_base_of_v<_With, _To> || std::is_same_v<_To, _With>;
 
+	// first type in a Variable args
+	template <typename _Ty, typename... _Vargs>
+	using first_v = _Ty;
+
 	template <typename _Ty, typename _Ey>
 	inline constexpr bool is_any() {
 		return std::is_same_v<_Ty, _Ey>;
 	}
 
-	template <typename _Ty, typename _Ey, typename... _Vargs>
+	template <typename _Ty, typename _Ey, typename _Ey2, typename... _Vargs>
 	inline constexpr bool is_any() {
-		return std::is_same_v<_Ty, _Ey> || is_any<_Ty, _Vargs>();
+		return std::is_same_v<_Ty, _Ey> || is_any<_Ty, _Ey2, _Vargs...>();
 	}
 
 	template <typename _Ty, typename _Ey>
@@ -62,9 +76,9 @@ namespace route
 		return std::is_same_v<_Ty, _Ey>;
 	}
 
-	template <typename _Ty, typename _Ey, typename... _Vargs>
+	template <typename _Ty, typename _Ey, typename _Ey2, typename... _Vargs>
 	inline constexpr bool is_all() {
-		return std::is_same_v<_Ty, _Ey> &&is_all<_Ty, _Vargs>();
+		return std::is_same_v<_Ty, _Ey> &&is_all<_Ty, _Ey2, _Vargs...>();
 	}
 
 	template <typename _Ty, typename... _Vargs>
@@ -81,9 +95,9 @@ namespace route
 		return sizeof( _Ty );
 	}
 
-	template <typename _Ty, typename... _Types>
+	template <typename _Ty, typename _Ey, typename... _Types>
 	inline static constexpr size_t max_sizeof() {
-		return std::max( sizeof( _Ty ), max_sizeof<_Types...>() );
+		return std::max( sizeof( _Ty ), max_sizeof<_Ey, _Types...>() );
 	}
 
 	// From The Godot Game Engine, modified by zahr abdullatif
