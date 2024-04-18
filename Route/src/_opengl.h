@@ -4,6 +4,7 @@
 
 using LPSDLWindow = SDL_Window *;
 
+#ifdef GAPI_GL
 class OpenGL
 {
 public:
@@ -64,13 +65,13 @@ public:
 	}
 
 	static inline GLint query_int( const GLenum id ) {
-		GLint value = 0;
+		GLint value;
 		glGetIntegerv( id, &value );
 		return value;
 	}
 
 	static inline GLfloat query_float( const GLenum id ) {
-		GLfloat value = 0;
+		GLfloat value;
 		glGetFloatv( id, &value );
 		return value;
 	}
@@ -78,3 +79,4 @@ public:
 private:
 	static LPSDLWindow s_current_window;
 };
+#endif

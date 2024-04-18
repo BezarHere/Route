@@ -2,6 +2,8 @@
 #include "_opengl.h"
 #include <SDL_opengl.h>
 
+#ifdef GAPI_GL
+
 LPSDLWindow OpenGL::s_current_window = nullptr;
 
 errno_t OpenGL::init() {
@@ -25,3 +27,4 @@ void OpenGL::close() {
 	SDL_Quit();
 }
 
+#endif
