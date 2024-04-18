@@ -247,14 +247,19 @@
     <ClInclude Include="libraries\SDL2\include\SDL_vulkan.h" />
     <ClInclude Include="libraries\SDL2_image\include\SDL_image.h" />
     <ClInclude Include="libraries\SDL2_ttf\include\SDL_ttf.h" />
+    <ClInclude Include="src\gapi.h" />
     <ClInclude Include="src\Route.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Route\Bases.h" />
+    <ClInclude Include="src\Route\Memblock.h" />
+    <ClInclude Include="src\Route\Performance.h" />
+    <ClInclude Include="src\Route\StorageBuffer.h" />
     <ClInclude Include="src\Route\Chunklist.h" />
     <ClInclude Include="src\Route\Boxed.h" />
     <ClInclude Include="src\Route\Color.h" />
     <ClInclude Include="src\Route\Component.h" />
     <ClInclude Include="src\Route\Image.h" />
+    <ClInclude Include="src\Route\IMap.h" />
     <ClInclude Include="src\Route\Logger.h" />
     <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
@@ -270,6 +275,7 @@
     <ClInclude Include="src\Route\Primitives.h" />
     <ClInclude Include="src\Route\ArrayView.h" />
     <ClInclude Include="src\Route\Texture.h" />
+    <ClInclude Include="src\Route\Traits.h" />
     <ClInclude Include="src\Route\Transform.h" />
     <ClInclude Include="src\Route\Vector.h" />
     <ClInclude Include="src\Route\Vertex.h" />
@@ -284,6 +290,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Route.cpp" />
+    <ClCompile Include="src\Route\Performance.cpp" />
+    <ClCompile Include="src\Route\StorageBuffer.cpp" />
     <ClCompile Include="src\Route\Component.cpp" />
     <ClCompile Include="src\Route\Application.cpp" />
     <ClCompile Include="src\Route\Image.cpp" />
