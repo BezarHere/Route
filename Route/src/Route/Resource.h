@@ -4,6 +4,9 @@
 
 namespace route
 {
+	using RID = uint32_t;
+	_INLINE_VAR constexpr auto RIDInvalid = RID( -1 );
+	
 	class Resource
 	{
 	public:
