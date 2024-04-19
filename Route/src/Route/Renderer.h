@@ -7,22 +7,62 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Shader.h"
+#include "Vertex.h"
 
 
 namespace route
 {
 	class Application;
 
-
-	// TODO: rename this, horrible name
-	enum class Topology
+	enum class PrimitiveTopology
 	{
 		Triangles,
 		TriangleStrips,
 		TriangleFans,
 		Line,
 		LineStrips,
-		Points
+		Points,
+		Patches,
+	};
+
+	enum class RendererAttribute
+	{
+		DepthTest,
+		// TODO: a lot of stuff (blending, scissors, ...)
+	};
+
+	enum class IndexType
+	{
+		Invalid = -1,
+		UInt8,
+		UInt16,
+		UInt32,
+	};
+
+	enum class CompareOperator
+	{
+		Never,
+		Less,
+		Equal,
+		LessOrEqual,
+		Greater,
+		NotEqual,
+		GreaterOrEqual,
+		Always
+	};
+
+	enum class CullMode
+	{
+		None,
+		Front,
+		Back,
+		FrontAndBack
+	};
+
+	enum class FaceWinding
+	{
+		CounterClockwise,
+		Clockwise,
 	};
 
 	class RenderCommandQueue
@@ -30,7 +70,8 @@ namespace route
 		enum class CommandType
 		{
 			Draw,
-			VertexBuffer,
+			DrawVertices,
+			BindVertexSource,
 			Transform2D,
 			Transform3D,
 			Texture,
@@ -43,10 +84,18 @@ namespace route
 			Mesh,
 		};
 
-		enum class CommandDrawType
+		enum class Filter
 		{
-			VerticesRaw,
-			VerticesIndexed
+			Nearest,
+			Linear,
+		};
+
+		enum class EdgeSampling
+		{
+			Repeate,
+			MirrorRepeate,
+			ClampToEdge,
+			ClampToBoarder
 		};
 
 		struct Command
@@ -80,7 +129,7 @@ namespace route
 			using resource_type = _Ty;
 
 			inline TCommandSSetResource()
-				: Command{ _Type }, rid{ RIDnpos } {
+				: Command{ _Type }, rid{ RIDInvalid } {
 			}
 
 			inline TCommandSSetResource( RID p_rid )
@@ -106,25 +155,38 @@ namespace route
 		};
 
 		// vertex buffer state is cleared after drawing
-		struct CommandVertexBuffer : public Command
+		struct CommandDrawVertices : public Command
 		{
 
-			inline CommandVertexBuffer() : Command{ CommandType::VertexBuffer } {
+			inline CommandDrawVertices() : Command{ CommandType::DrawVertices } {
 			}
 
-			inline CommandVertexBuffer( void *p_vertices, size_t p_count, Topology p_meshing_type )
-				: Command{ CommandType::VertexBuffer }, vertices{ p_vertices }, count{ p_count }, meshing_type{ p_meshing_type } {
+			inline CommandDrawVertices( index_t p_offset, size_t p_count, PrimitiveTopology p_meshing_type )
+				: Command{ CommandType::DrawVertices }, offset{ p_offset }, count{ p_count }, meshing_type{ p_meshing_type } {
 			}
 
 
 			// each vertex size is defined by the vertex input descriptor, see "VertexInputDesc"
-			void *vertices = nullptr;
+			index_t offset = 0;
 			size_t count = 0;
-			Topology meshing_type = Topology::Triangles;
+			PrimitiveTopology meshing_type = PrimitiveTopology::TriangleStrips;
 		};
 
+		struct CommandBindVertexSourc : public Command
+		{
+			inline CommandBindVertexSourc() : Command{ CommandType::BindVertexSource } {
+			}
 
-		using CommandDraw = TCommandSWrapper<CommandDrawType, CommandType::Draw>;
+			inline CommandBindVertexSourc( RID p_vertex_buffer, RID p_index_buffer, const Blob<const VertexInputDesc> &p_input_desc )
+				: Command{ CommandType::BindVertexSource },
+				vertex_buffer{ p_vertex_buffer }, index_buffer{ p_index_buffer }, input_desc{ p_input_desc } {
+			}
+
+			RID vertex_buffer;
+			RID index_buffer;
+			Blob<const VertexInputDesc> input_desc;
+		};
+
 
 		using CommandXForm2D = TCommandSWrapper<Transform2D, CommandType::Transform2D>;
 		using CommandXForm3D = TCommandSWrapper<Transform3D, CommandType::Transform3D>;
@@ -136,15 +198,15 @@ namespace route
 		using CommandSetMaterial = TCommandSWrapper<Material, CommandType::Metrial>;
 		using CommandSetShader = TCommandSWrapper<Shader, CommandType::Shader>;
 
-
-		using command_boxed = boxed<Command, 192>;
+		// TODO: the type shifter
+		using command_boxed = boxed<Command, 128>;
 	};
 
-	class RenderServer;
+	class GraphicsResourceFactory;
 
 	class Renderer
 	{
-		friend RenderServer;
+		friend GraphicsResourceFactory;
 	public:
 		Renderer( Window &window );
 		~Renderer();
