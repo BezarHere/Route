@@ -12,12 +12,17 @@ namespace route
 #ifdef WIN32
 		APP_MEMORY_INFORMATION info{};
 		BOOL success = GetProcessInformation( GetCurrentProcess(), ProcessAppMemoryInfo, &info, sizeof( info ) );
+
+		MemoryUsage result;
 		if (!success)
 		{
-			std::cout << "NOOO\n";
-			// TODO: DO ERROR STUFF
+			result.available = -1;
+			result.peak_usage = -1;
+			result.total_commit = -1;
+			result.usage = -1;
+			return result;
 		}
-		MemoryUsage result;
+
 		result.available = info.AvailableCommit;
 		result.peak_usage = info.PeakPrivateCommitUsage;
 		result.total_commit = info.TotalCommitUsage;
