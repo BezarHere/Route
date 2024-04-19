@@ -263,7 +263,7 @@
     <ClInclude Include="src\Route\Logger.h" />
     <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
-    <ClInclude Include="src\Route\RenderServer.h" />
+    <ClInclude Include="src\Route\GraphicsResourceFactory.h" />
     <ClInclude Include="src\Route\Resource.h" />
     <ClInclude Include="src\Route\ResourceServer.h" />
     <ClInclude Include="src\Route\Scene.h" />
@@ -290,6 +290,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Route.cpp" />
+    <ClCompile Include="src\Route\GraphicsResourceFactory.cpp" />
     <ClCompile Include="src\Route\Performance.cpp" />
     <ClCompile Include="src\Route\StorageBuffer.cpp" />
     <ClCompile Include="src\Route\Component.cpp" />
