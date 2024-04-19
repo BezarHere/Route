@@ -90,14 +90,15 @@ namespace route
 	}
 #endif
 
-	errno_t StorageBuffer::put( const void *data, const size_t size, const index_t offset ) {
-		subdata( gl_type( m_id ), data, size, offset );
+	errno_t StorageBuffer::update( const void *data, const size_t size, const index_t offset ) {
+		send_data( gl_type( m_id ), data, size, offset );
 		return errno_t();
 	}
 
-	void StorageBuffer::subdata( uint32_t type, const void *data, ptrdiff_t size, ptrdiff_t offset ) {
+	void StorageBuffer::send_data( BufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset ) {
+		
 #ifdef GAPI_GL
-		glBufferSubData( type, offset, size, data );
+		glNamedBufferSubData( gl_name( id ), offset, size, data );
 #endif
 	}
 

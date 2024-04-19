@@ -41,11 +41,11 @@ namespace route
 		size_t size() const;
 		void bind();
 
-		errno_t put( const void *data, size_t size, index_t offset = 0 );
+		errno_t update( const void *data, size_t size, index_t offset = 0 );
 
 		static BufferID get_bound( uint32_t type );
 		static void clear_bound( uint32_t type );
-		static void subdata( uint32_t type, const void *data, ptrdiff_t size, ptrdiff_t offset );
+		static void send_data( BufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset );
 
 
 
