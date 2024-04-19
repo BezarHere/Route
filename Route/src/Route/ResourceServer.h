@@ -1,11 +1,9 @@
 #pragma once
 #include "Bases.h"
+#include "Resource.h"
 
 namespace route
 {
-	using RID = uint32_t;
-	_INLINE_VAR constexpr auto RIDnpos = RID( -1 );
-
 	class Application;
 	class Renderer;
 

@@ -130,7 +130,8 @@ namespace route
 			memory_block mem; // <- don't init on default!
 		};
 
-		static constexpr size_t ChunkBufferLength = 256;
+		static constexpr size_t ChunkBufferMemSz = (1ULL << 10U) * 16;
+		static constexpr size_t ChunkBufferLength = idiv_ceil( ChunkBufferMemSz, sizeof( _Ty ) );
 
 		struct Chunk
 		{
@@ -169,8 +170,8 @@ namespace route
 		};
 
 		inline Internal() {
-			// magic nomber, just for now
-			chunks.reserve( 32U );
+			// magic number, just for now
+			chunks.reserve( 4U );
 		}
 
 		inline index_t first_unlocked_chunk() const {
@@ -225,7 +226,7 @@ namespace route
 			// something fucked up, kill me
 			if (chunk.elements[ add_index ].flags & EFlag_Init)
 			{
-				return RIDnpos;
+				return RIDInvalid;
 			}
 
 			chunk.inc_counter(); /* can we afford to check for de-syncs?? */
@@ -281,8 +282,8 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from add_resource: ResourceServer didn't initalize" );
-			return RIDnpos;
+			Logger::write( "from add_resource: ResourceServer didn't initialize" );
+			return RIDInvalid;
 		}
 
 		return s_internal->add_resource<resource_type &&>( std::move( resource ) );
@@ -293,8 +294,8 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from add_resource: ResourceServer didn't initalize" );
-			return RIDnpos;
+			Logger::write( "from add_resource: ResourceServer didn't initialize" );
+			return RIDInvalid;
 		}
 
 		return s_internal->add_resource<const resource_type &>( resource );
@@ -305,7 +306,7 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from pop_resource: ResourceServer didn't initalize" );
+			Logger::write( "from pop_resource: ResourceServer didn't initialize" );
 			return;
 		}
 
@@ -329,7 +330,7 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from set_resource_name: ResourceServer didn't initalize" );
+			Logger::write( "from set_resource_name: ResourceServer didn't initialize" );
 			return;
 		}
 
