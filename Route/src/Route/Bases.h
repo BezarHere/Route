@@ -46,6 +46,15 @@ namespace route
 	_INLINE_VAR constexpr real_t E = 2.7182818f;
 	_INLINE_VAR constexpr real_t Epsilon = 1e-4f;
 
+	template <typename _Ty>
+	inline _Ty *memcpy( _Ty *dst, const _Ty *src, const size_t count ) {
+		return reinterpret_cast<_Ty *>(std::memcpy( dst, src, count * sizeof( _Ty ) ));
+	}
+
+	template <typename _Ty>
+	inline _Ty *memset( _Ty *dst, const int val, const size_t count ) {
+		return reinterpret_cast<_Ty *>(std::memset( dst, val, count * sizeof( _Ty ) ));
+	}
 
 	// is it pure? not a reference nor a const nor a volatile type and not the void type
 	template <typename _Ty>
@@ -145,6 +154,48 @@ namespace route
 		}
 		return 0;
 	}
+
+	template <typename _Ty>
+	constexpr _Ty idiv_ceil( _Ty numerator, _Ty denominator ) {
+		return numerator / denominator + (numerator % denominator ? 1 : 0);
+	}
+
+	template <typename _Ty>
+	constexpr _Ty idiv_round( _Ty numerator, _Ty denominator ) {
+		return numerator / denominator + ((numerator % denominator >= (denominator >> 1)) ? 1 : 0);
+	}
+
+
+	template <typename _Ty>
+	struct UniqueBlob
+	{
+		size_t length;
+		std::unique_ptr<_Ty[]> data;
+	};
+
+	template <typename _Ty>
+	struct Blob
+	{
+		inline Blob() {
+		}
+
+		template <size_t _Sz>
+		inline Blob( _Ty p_data[ _Sz ] ) : length{ _Sz }, data{ p_data } {
+		}
+
+		inline Blob( _Ty *p_data, size_t len ) : length{ len }, data{ p_data } {
+		}
+
+		size_t length = 0;
+		_Ty *data = nullptr;
+	};
+
+	template <typename _Ty, size_t _Sz>
+	struct InlinedBlob
+	{
+		size_t length;
+		_Ty data[ _Sz ];
+	};
 
 	struct nothing
 	{
