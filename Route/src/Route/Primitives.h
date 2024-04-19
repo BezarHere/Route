@@ -103,7 +103,7 @@ namespace route
 	};
 
 	using boxed_primitive_2d = boxed<Primitive2D, 64, primitive_type_shifter<Primitive2D>>;
-	using boxed_primitive_3d = boxed<Primitive3D, 128, primitive_type_shifter<Primitive3D>>;
+	using boxed_primitive_3d = boxed<Primitive3D, 96, primitive_type_shifter<Primitive3D>>;
 
 	template<>
 	inline void primitive_type_shifter<Primitive2D>::assign( value_type &to, const value_type &from ) {
