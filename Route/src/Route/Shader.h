@@ -5,7 +5,7 @@ namespace route
 {
 	typedef unsigned ShaderID;
 
-	class Shader : public Resource
+	class Shader : public GraphicsResource
 	{
 	public:
 

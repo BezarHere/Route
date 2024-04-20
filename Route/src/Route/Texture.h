@@ -35,9 +35,11 @@ namespace route
 
 	typedef vpid_t TextureID;
 
-	class Texture : public Resource
+	class Texture : public GraphicsResource
 	{
 	public:
+		inline Texture() {
+		}
 		Texture( const Texture & );
 
 	private:
