@@ -56,6 +56,24 @@ namespace route
 		return reinterpret_cast<_Ty *>(std::memset( dst, val, count * sizeof( _Ty ) ));
 	}
 
+	template <typename _Ty>
+	inline constexpr std::size_t hash_type() {
+#ifdef _MSC_VER
+		constexpr char FN_SIG[] = __FUNCSIG__;
+#else
+#define FN_SIG __PRETTY_FUNCTION__
+#endif
+		std::size_t result{};
+
+		for (const char c : FN_SIG)
+		{
+			result += (c & 1) ? (c * 16777619ULL) : (~c * 2166136261ULL);
+		}
+
+		return result;
+#undef FN_SIG
+	}
+
 	// is it pure? not a reference nor a const nor a volatile type and not the void type
 	template <typename _Ty>
 	_INLINE_VAR constexpr bool is_pure_v =
