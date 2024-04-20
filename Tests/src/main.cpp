@@ -83,6 +83,12 @@ int main() {
 
 	Application app{ window, renderer };
 
+	for (int i = 0; i < 10000; i++)
+	{
+		ResourceServer<Texture>::add_resource( Texture() );
+		ResourceServer<Texture>::add_resource( Texture() );
+	}
+
 	app.start();
 	app.stop();
 
