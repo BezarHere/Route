@@ -99,21 +99,21 @@ namespace route
 
 	typedef unsigned VInputDescID;
 
-	struct VertexInputDesc
+	struct VertexInputState
 	{
 	public:
 		using container_type = vector<VInputAttribute>;
 
-		// 32 seems resonable
+		// 32 seems reasonable
 		static constexpr size_t MaxVertexAttributes = 32ULL;
 
-		VertexInputDesc();
-		~VertexInputDesc();
+		VertexInputState();
+		~VertexInputState();
 
-		VertexInputDesc( const VertexInputDesc &copy );
-		VertexInputDesc( VertexInputDesc &&move ) noexcept;
-		VertexInputDesc &operator=( const VertexInputDesc &copy );
-		VertexInputDesc &operator=( VertexInputDesc &&move ) noexcept;
+		VertexInputState( const VertexInputState &copy );
+		VertexInputState( VertexInputState &&move ) noexcept;
+		VertexInputState &operator=( const VertexInputState &copy );
+		VertexInputState &operator=( VertexInputState &&move ) noexcept;
 
 		// only binds, doesn't apply/enable the vertex array attribs
 		void bind() const;

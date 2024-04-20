@@ -39,9 +39,9 @@ class VPDSetupRegister
 public:
 
 	static inline void set_enabled_attrs( const size_t num ) {
-		if (num > VertexInputDesc::MaxVertexAttributes)
+		if (num > VertexInputState::MaxVertexAttributes)
 		{
-			s_enabled_attrs = VertexInputDesc::MaxVertexAttributes;
+			s_enabled_attrs = VertexInputState::MaxVertexAttributes;
 			return;
 		}
 		s_enabled_attrs = num;
@@ -60,27 +60,27 @@ size_t VPDSetupRegister::s_enabled_attrs = 0;
 namespace route
 {
 
-	VertexInputDesc::VertexInputDesc()
+	VertexInputState::VertexInputState()
 		: m_id{ create_mesh_desc() }, m_container{}, m_offset{ 0 }, m_stride{ 0 } {
 	}
 
-	VertexInputDesc::~VertexInputDesc() {
+	VertexInputState::~VertexInputState() {
 		if (m_id)
 		{
 			glDeleteVertexArrays( 1, &m_id );
 		}
 	}
 
-	VertexInputDesc::VertexInputDesc( const VertexInputDesc &copy )
+	VertexInputState::VertexInputState( const VertexInputState &copy )
 		: m_id{ create_mesh_desc() }, m_container{ copy.m_container }, m_offset{ copy.m_offset }, m_stride{ copy.m_stride } {
 	}
 
-	VertexInputDesc::VertexInputDesc( VertexInputDesc &&move ) noexcept
+	VertexInputState::VertexInputState( VertexInputState &&move ) noexcept
 		: m_id{ move.m_id }, m_container{ move.m_container }, m_offset{ move.m_offset }, m_stride{ move.m_stride } {
 		move.m_id = 0;
 	}
 
-	VertexInputDesc &VertexInputDesc::operator=( const VertexInputDesc &copy ) {
+	VertexInputState &VertexInputState::operator=( const VertexInputState &copy ) {
 		if (!m_id)
 		{
 			m_id = create_mesh_desc();
@@ -92,7 +92,7 @@ namespace route
 		return *this;
 	}
 
-	VertexInputDesc &VertexInputDesc::operator=( VertexInputDesc &&move ) noexcept {
+	VertexInputState &VertexInputState::operator=( VertexInputState &&move ) noexcept {
 		if (m_id)
 		{
 			glDeleteVertexArrays( 1, &m_id );
@@ -106,11 +106,11 @@ namespace route
 		return *this;
 	}
 
-	void VertexInputDesc::bind() const {
+	void VertexInputState::bind() const {
 		glBindVertexArray( m_id );
 	}
 
-	void VertexInputDesc::setup() const {
+	void VertexInputState::setup() const {
 		const size_t count = std::min( m_container.size(), MaxVertexAttributes );
 		VPDSetupRegister::set_enabled_attrs( count );
 
@@ -132,32 +132,32 @@ namespace route
 		}
 	}
 
-	VInputDescID VertexInputDesc::get_bound() {
+	VInputDescID VertexInputState::get_bound() {
 		GLint value = 0;
 		glGetIntegerv( GL_VERTEX_ARRAY_BINDING, &value );
 		return value;
 	}
 
-	void VertexInputDesc::clear_bound() {
+	void VertexInputState::clear_bound() {
 		glBindVertexArray( 0 );
 	}
 
-	void VertexInputDesc::clear_setup() {
+	void VertexInputState::clear_setup() {
 		for (size_t i = 0; i < VPDSetupRegister::get_enabled_attrs(); i++)
 		{
 			glDisableVertexAttribArray( static_cast<GLuint>(i) );
 		}
 	}
 
-	void VertexInputDesc::set_stride( uint32_t stride ) {
+	void VertexInputState::set_stride( uint32_t stride ) {
 		m_stride = stride;
 	}
 
-	void VertexInputDesc::set_offset( uint32_t offset ) {
+	void VertexInputState::set_offset( uint32_t offset ) {
 		m_offset = offset;
 	}
 
-	size_t VertexInputDesc::get_vertex_size() const {
+	size_t VertexInputState::get_vertex_size() const {
 		size_t attrs_size = 0;
 		for (const auto &attr : m_container)
 		{
@@ -166,7 +166,7 @@ namespace route
 		return attrs_size;
 	}
 
-	void VertexInputDesc::_validate_attributes() {
+	void VertexInputState::_validate_attributes() {
 		if (m_container.size() > MaxVertexAttributes)
 		{
 			m_container.resize( MaxVertexAttributes );
