@@ -30,8 +30,8 @@ namespace route
 		return result;
 #else
 		// TODO: linux + others
-#endif
 		return MemoryUsage();
+#endif
 	}
 
 }
