@@ -51,24 +51,24 @@ namespace route
 		template <typename _Ey, typename... _Vargs>
 		static inline this_type make( _Vargs&& ...args ) {
 			this_type val{};
-			new (val.m_memory.get_ptr()) _Ey( std::forward<_Vargs>( args )... );
+			new (val.m_memory.data()) _Ey( std::forward<_Vargs>( args )... );
 			return val;
 		}
 
 		inline value_type *ptr() noexcept {
-			return static_cast<value_type *>(m_memory.get_ptr());
+			return reinterpret_cast<value_type *>(m_memory.data());
 		}
 
 		inline value_type *data() noexcept {
-			return static_cast<value_type *>(m_memory.get_ptr());
+			return reinterpret_cast<value_type *>(m_memory.data());
 		}
 
 		inline const value_type *ptr() const noexcept {
-			return static_cast<const value_type *>(m_memory.get_ptr());
+			return reinterpret_cast<const value_type *>(m_memory.data());
 		}
 
 		inline const value_type *data() const noexcept {
-			return static_cast<const value_type *>(m_memory.get_ptr());
+			return reinterpret_cast<const value_type *>(m_memory.data());
 		}
 
 		inline boxed() = default;
@@ -113,7 +113,7 @@ namespace route
 			}
 			else
 			{
-				return *static_cast<const value_type *>(m_memory.get_ptr());
+				return *static_cast<const value_type *>(m_memory.data());
 			}
 		}
 
@@ -124,30 +124,30 @@ namespace route
 			}
 			else
 			{
-				return *static_cast<value_type *>(m_memory.get_ptr());
+				return *static_cast<value_type *>(m_memory.data());
 			}
 		}
 
 		inline const value_type *operator->() const noexcept {
-			return static_cast<const value_type *>(m_memory.get_ptr());
+			return static_cast<const value_type *>(m_memory.data());
 		}
 
 		inline value_type *operator->() noexcept {
-			return static_cast<value_type *>(m_memory.get_ptr());
+			return static_cast<value_type *>(m_memory.data());
 		}
 
 		// derived get
 		template <typename _Ey>
 		inline _Ey &get() noexcept {
 			static_assert(std::is_base_of_v<_Ty, _Ey>, "Can't cast to non-derived");
-			return *dynamic_cast<_Ey *>(m_memory.get_ptr());
+			return *dynamic_cast<_Ey *>(m_memory.data());
 		}
 
 		// derived get
 		template <typename _Ey>
 		inline const _Ey &get() const noexcept {
 			static_assert(std::is_base_of_v<_Ty, _Ey>, "Can't cast to non-derived");
-			return *dynamic_cast<_Ey *>(m_memory.get_ptr());
+			return *dynamic_cast<_Ey *>(m_memory.data());
 		}
 
 	private:
