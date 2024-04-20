@@ -252,6 +252,7 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Route\Bases.h" />
     <ClInclude Include="src\Route\Memblock.h" />
+    <ClInclude Include="src\Route\VertexInputDesc.h" />
     <ClInclude Include="src\Route\Performance.h" />
     <ClInclude Include="src\Route\StorageBuffer.h" />
     <ClInclude Include="src\Route\Chunklist.h" />
