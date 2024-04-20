@@ -3,6 +3,8 @@
 #include "Traits.h"
 #include "Vector.h"
 #include "IMap.h"
+#include "Primitives.h"
+#include "Resource.h"
 
 namespace route
 {
@@ -34,32 +36,69 @@ namespace route
 			return has_same_space( object );
 		}
 
+		inline void set_offset( const direction_type &offset ) {
+			m_offset = offset;
+		}
+
+		inline const direction_type &get_offset() {
+			return m_offset;
+		}
+
 	protected:
-		direction_type offset;
+		direction_type m_offset;
+	};
+
+	template <typename _Traits>
+	struct TDrawenComponent : TSpaceComponent<_Traits>
+	{
+	public:
+
+		
+
+	protected:
+		RID m_vbuf;
+		RID m_ibuf;
 	};
 
 	using Component2D = TSpaceComponent<traits::Impl2D>;
 	using Component3D = TSpaceComponent<traits::Impl3D>;
 
-	struct Shape2DComp : public Component2D
+	template <typename _Ty>
+	struct ShapeComp : public Component2D
 	{
+	public:
+		using primitive_boxed_type = _Ty;
 
-		inline void added( Object &object ) override {
-		}
+		inline ShapeComp() { }
 
-		inline void removed( Object &object ) override {
-		}
+		void added( Object &object ) override;
 
-		inline void update( Object &object ) override {
-		}
+		void removed( Object &object ) override;
 
+		void update( Object &object ) override;
 
+		primitive_boxed_type primitive;
 	};
+
+	using Shape2DComp = ShapeComp<boxed_primitive_2d>;
+	using Shape3DComp = ShapeComp<boxed_primitive_3d>;
 
 	template <typename _Ty>
 	_INLINE_VAR constexpr bool is_component_v =
 		std::is_same_v<Component, _Ty> || std::is_base_of_v<Component, _Ty>;
 	using component = Component;
 
+
+	template<typename _Ty>
+	inline void ShapeComp<_Ty>::added( Object &object ) {
+	}
+
+	template<typename _Ty>
+	inline void ShapeComp<_Ty>::removed( Object &object ) {
+	}
+
+	template<typename _Ty>
+	inline void ShapeComp<_Ty>::update( Object &object ) {
+	}
 
 }
