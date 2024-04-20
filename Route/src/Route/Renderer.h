@@ -166,7 +166,7 @@ namespace route
 			}
 
 
-			// each vertex size is defined by the vertex input descriptor, see "VertexInputDesc"
+			// each vertex size is defined by the vertex input descriptor, see "VertexInputState"
 			index_t offset = 0;
 			size_t count = 0;
 			PrimitiveTopology meshing_type = PrimitiveTopology::TriangleStrips;
@@ -177,14 +177,14 @@ namespace route
 			inline CommandBindVertexSourc() : Command{ CommandType::BindVertexSource } {
 			}
 
-			inline CommandBindVertexSourc( RID p_vertex_buffer, RID p_index_buffer, const Blob<const VertexInputDesc> &p_input_desc )
+			inline CommandBindVertexSourc( RID p_vertex_buffer, RID p_index_buffer, const Blob<const VertexInputState> &p_input_desc )
 				: Command{ CommandType::BindVertexSource },
 				vertex_buffer{ p_vertex_buffer }, index_buffer{ p_index_buffer }, input_desc{ p_input_desc } {
 			}
 
 			RID vertex_buffer;
 			RID index_buffer;
-			Blob<const VertexInputDesc> input_desc;
+			Blob<const VertexInputState> input_desc;
 		};
 
 
