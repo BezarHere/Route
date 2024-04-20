@@ -19,6 +19,8 @@ namespace route
 		using resource_name_char = char;
 		static constexpr size_t ResourceNameMaxLn = 128;
 
+		static bool is_rid_valid( RID rid );
+
 		static resource_type &get_resource( RID rid );
 		static RID add_resource( resource_type &&resource );
 		static RID add_resource( const resource_type &resource );

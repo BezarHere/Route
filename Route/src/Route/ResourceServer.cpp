@@ -13,22 +13,52 @@
 #include "Performance.h"
 
 /*
+* # RID should be a uint64_t composing of:
+* 0xffffffff ffffffff (64bits)
+*   ^^^^^^^^ [ index value (32) ]
+*   |
+*   [ check code (32) ]
+*
+*  ## the check code
+*			varies between resource servers
+*			it can be used to check if the rid is from any given resource server
+*
+*  ## the index value
+*			contains where is the data allocated
+*			it can have an extra security feature, but it's not required
+*
+*  ## NOTE: when encoding chunk/element index in the index value
+*			the index value should have the chunk index on the upper bits
+*			and the element/item index on the lower bits
+*/
+
+
+/*
 * BOILER PLATE
 */
 
 namespace route
 {
-	static constexpr RID ChunkBShift = 20;
-	static constexpr RID ChunkMask = ~((1u << ChunkBShift) - 1); // maximum possible number of chunks is 4096
-	static constexpr RID ElementMask = ~ChunkMask;
+	// should be AT LEAST half the RID's bitwidth
+	using HalfRID = uint32_t;
+	using RIDCheckCode = HalfRID;
+	using RIDValue = HalfRID;
+	// RID HALF WIDTH
+	constexpr int RIDHW = sizeof( RID ) * 4;
+	static_assert(sizeof( RID ) / 2 == sizeof( HalfRID ), "HalfRID isn't actually half the RID");
 
-	static int *g_SeedStartPtr = new int;
-	static RID g_GlobalSeedHashHole =
-		static_cast<RID>(_rotl64( 0x981faca1ULL ^ reinterpret_cast<uintptr_t>(g_SeedStartPtr), reinterpret_cast<uintptr_t>(g_SeedStartPtr) & 0x3fU ));
+	// maximum possible number of chunks is 4096
+	static constexpr RIDValue RIDChunkIndexWidth = 12;
+	static constexpr RIDValue RIDItemIndexWidth = sizeof( RIDValue ) * 8 - RIDChunkIndexWidth;
+	static constexpr RIDValue RIDChunkMask = ((1UL << RIDChunkIndexWidth) - 1) << RIDItemIndexWidth;
+	static constexpr RIDValue RIDItemMask = (1UL << RIDItemIndexWidth) - 1;
+
+
 
 	struct Application::TRSH
 	{
 	public:
+
 		template <typename... _Tys>
 		static inline void execute( bool state ) {
 			return state ? open<_Tys...>() : close<_Tys...>();
@@ -65,6 +95,13 @@ namespace route
 		}
 	};
 
+	template ResourceServer<Resource>;
+	template ResourceServer<GraphicsResource>;
+	template ResourceServer<Texture>;
+	template ResourceServer<Material>;
+	template ResourceServer<Shader>;
+	template ResourceServer<StorageBuffer>;
+
 	inline void Application::TRSH::execute( bool state ) {
 		const auto mem = Performance::get_memory_usage();
 
@@ -72,7 +109,7 @@ namespace route
 		* Template defined below are which resource servers are to be template instanced
 		* Not the best place to put such thing, but it works well
 		*/
-		execute<Resource, Texture, Material, Shader, StorageBuffer>( state );
+		execute<Resource, GraphicsResource, Texture, Material, Shader, StorageBuffer>( state );
 
 		std::cout << "mem usage diff after " << (state ? "running" : "closing") << " the ResServers: "
 			<< (Performance::get_memory_usage() - mem) << '\n';
@@ -112,6 +149,18 @@ namespace route
 	template<typename _Ty>
 	struct ResourceServer<_Ty>::Internal {
 		static_assert(std::is_same_v<Resource, _Ty> || std::is_base_of_v<Resource, _Ty>, "_TY should derive from Resource");
+		// the hash code of the type _Ty shifted left by half the RID's bitwidth
+		static constexpr RID SecurityMask = static_cast<RID>(hash_type<_Ty>()) << RIDHW;
+		// the hash code of the type _Ty shifted right by half the RID's bitwidth xored with the bit-invertex SecurityMask
+		static constexpr RID SecurityCode = (static_cast<RID>(hash_type<_Ty>()) >> RIDHW) ^ ~SecurityMask;
+
+		RT_FDEF_SICX bool owns_rid( const RID rid ) {
+			return ((rid >> RIDHW) ^ SecurityMask) == SecurityCode;
+		}
+
+		RT_FDEF_SICX RIDValue rid_value( const RID rid ) {
+			return rid & ((1ULL << RIDHW) - 1);
+		}
 
 		struct Element
 		{
@@ -201,20 +250,30 @@ namespace route
 		}
 
 		inline RIndex get_rindex( const RID rid ) const {
-			return { static_cast<uint16_t>((rid ^ seed) >> ChunkBShift), static_cast<uint16_t>((rid ^ seed) & ElementMask) };
+			const auto value = rid_value( rid );
+			return { static_cast<uint16_t>(value >> RIDItemIndexWidth), static_cast<uint16_t>(value & RIDItemMask) };
 		}
 
 		inline RID to_rid( const RIndex rindex ) const {
-			return ((rindex.chunk << ChunkBShift) | (rindex.element & ElementMask)) ^ seed;
+			return RID( rindex.chunk << RIDItemIndexWidth ) | RID( rindex.element & RIDItemMask );
 		}
 
 		inline _Ty &get_resource( const RID rid ) {
+#ifdef RT_RID_CHECKS
+			if (!owns_rid( rid ))
+			{
+				char buf[ 256 ]{};
+				sprintf_s( buf, "Illagel RID: '%llu' is not owned by ResourceServer<%s>", rid, typeid(_Ty).name() );
+				std::_Xruntime_error( buf );
+			}
+#endif // RT_RID_CHECKS
+
 			const auto rindex = get_rindex( rid );
 			return *reinterpret_cast<_Ty *>(chunks[ rindex.chunk ].elements[ rindex.element ].mem);
 		}
 
 		template <typename _Ey>
-		inline errno_t _add_resource_unchecked( _Ey resource ) {
+		inline RID _add_resource_unchecked( _Ey resource ) {
 			using raw_ey_type = std::_Remove_cvref_t<_Ey>;
 
 			const index_t chunk_index = unlocked_chunk_or_create();
@@ -238,7 +297,7 @@ namespace route
 		}
 
 		template <typename _Ey>
-		inline errno_t add_resource( _Ey resource ) {
+		inline RID add_resource( _Ey resource ) {
 			using raw_ey_type = std::_Remove_cvref_t<_Ey>;
 			static_assert(sizeof( raw_ey_type ) <= Element::value_size, "Type too big");
 			static_assert(is_related_v<resource_type, raw_ey_type>, "Unrelated type");
@@ -266,10 +325,14 @@ namespace route
 			}
 		}
 
-		const RID seed = (g_GlobalSeedHashHole += g_GlobalSeedHashHole * 0xc14a + 1);
 		size_t ref_counter;
 		vector<Chunk> chunks{};
 	};
+
+	template<typename _Ty>
+	bool ResourceServer<_Ty>::is_rid_valid( RID rid ) {
+		return s_internal->owns_rid( rid );
+	}
 
 	// no need to check if the internals are null, let the user figure it out
 	template<typename _Ty>
@@ -282,7 +345,7 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from add_resource: ResourceServer didn't initialize" );
+			Logger::write( "from add_resource: ResourceServer didn't initialize", LogLevel::Error );
 			return RIDInvalid;
 		}
 
@@ -294,7 +357,7 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from add_resource: ResourceServer didn't initialize" );
+			Logger::write( "from add_resource: ResourceServer didn't initialize", LogLevel::Error );
 			return RIDInvalid;
 		}
 
@@ -306,7 +369,7 @@ namespace route
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
-			Logger::write( "from pop_resource: ResourceServer didn't initialize" );
+			Logger::write( "from pop_resource: ResourceServer didn't initialize", LogLevel::Error );
 			return;
 		}
 
