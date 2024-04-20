@@ -20,7 +20,7 @@ namespace route
 
 	typedef uint64_t BufferID;
 
-	class StorageBuffer : public Resource
+	class StorageBuffer : public GraphicsResource
 	{
 	public:
 		StorageBuffer( const StorageBuffer & );
