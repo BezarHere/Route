@@ -5,6 +5,8 @@
 namespace route
 {
 	using DeviceID = int64_t;
+	typedef class GraphicsResourceFactory GphxResFac;
+
 	class GraphicsResourceFactory
 	{
 	public:
