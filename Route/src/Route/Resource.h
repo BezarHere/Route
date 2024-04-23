@@ -1,5 +1,6 @@
 #pragma once
 #include "Bases.h"
+#include "Error.h"
 
 
 namespace route
@@ -61,10 +62,13 @@ namespace route
 	{
 	public:
 
-		inline virtual errno_t save( const string &path ) const {
+		inline virtual Error save( const string &path ) const {
+			return Error::NotImplemented;
+		}
 
-		};
-		inline virtual errno_t load( const string &path ) = 0;
+		inline virtual Error load( const string &path ) {
+			return Error::NotImplemented;
+		}
 
 	protected:
 		string m_filepath;
