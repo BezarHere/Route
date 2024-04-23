@@ -252,6 +252,8 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Route\Bases.h" />
     <ClInclude Include="src\Route\Memblock.h" />
+    <ClInclude Include="src\Route\RenderCommandQueue.h" />
+    <ClInclude Include="src\Route\ShaderFactory.h" />
     <ClInclude Include="src\Route\VertexInputDesc.h" />
     <ClInclude Include="src\Route\Performance.h" />
     <ClInclude Include="src\Route\StorageBuffer.h" />
@@ -293,6 +295,7 @@
     <ClCompile Include="src\Route.cpp" />
     <ClCompile Include="src\Route\GraphicsResourceFactory.cpp" />
     <ClCompile Include="src\Route\Performance.cpp" />
+    <ClCompile Include="src\Route\Shader.cpp" />
     <ClCompile Include="src\Route\StorageBuffer.cpp" />
     <ClCompile Include="src\Route\Component.cpp" />
     <ClCompile Include="src\Route\Application.cpp" />
