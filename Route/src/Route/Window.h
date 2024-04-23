@@ -34,6 +34,8 @@ namespace route
 		Window( const Window & ) = delete;
 		Window &operator=( const Window & ) = delete;
 
+		Vec2u size() const;
+
 		void poll();
 		inline operator bool() const {
 			return !m_should_close;

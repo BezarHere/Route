@@ -2,6 +2,7 @@
 #include "../_opengl.h"
 #include "SDL.h"
 #include "Window.h"
+#include "Performance.h"
 #include <iostream>
 
 static inline void setup_opengl() {
@@ -62,6 +63,13 @@ namespace route
 		move.m_handle = nullptr;
 		return *this;
 	}
+
+	Vec2u Window::size() const {
+		Vec2u result;
+		SDL_GetWindowSize( (LPSDLWindow)m_handle, (int *)&result.x, (int *)&result.y );
+		return result;
+	}
+
 	void Window::poll() {
 		SDL_Event event;
 		while (SDL_PollEvent( &event ))
