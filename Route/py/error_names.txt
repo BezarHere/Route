@@ -85,5 +85,8 @@
 { "BufferTooSmall" },
 { "Inaccessible" },
 { "Unauthorized" },
+{ "ServiceUnavailable" },
+{ "ServiceLocked" },
+{ "ServiceNotInitialized" },
 { "JustCryAboutIt" },
 { "UNKNOWN" }

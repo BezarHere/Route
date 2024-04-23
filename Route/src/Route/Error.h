@@ -127,6 +127,10 @@ namespace route
 		Inaccessible,
 		Unauthorized,
 
+		ServiceUnavailable,
+		ServiceLocked,
+		ServiceNotInitialized,
+
 		JustCryAboutIt,
 
 		UNKNOWN,
@@ -224,6 +228,9 @@ namespace std
 			{ "BufferTooSmall" },
 			{ "Inaccessible" },
 			{ "Unauthorized" },
+			{ "ServiceUnavailable" },
+			{ "ServiceLocked" },
+			{ "ServiceNotInitialized" },
 			{ "JustCryAboutIt" },
 			{ "UNKNOWN" }
 		};

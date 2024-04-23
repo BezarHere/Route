@@ -1,11 +1,12 @@
 
 import enum
-from lib2to3.pgen2.parse import ParseError
+from pathlib import Path
 import re
 
+__folder__ = Path(__file__).parent
 
-enum_matcher_re = re.compile(r"enum\s+class\s+Error\s+{([\w\s,]+)}")
-errors_header = r'../src/Route/Error.h'
+enum_matcher_re = re.compile(r"enum\s+class\s+Error\s*:\s*\w*\s+{([\w\s,]+)}")
+errors_header = __folder__.parent.joinpath(Path(r'src/Route/Error.h'))
 
 MAX_NAME_LN = 64
 
@@ -105,7 +106,7 @@ def main():
 		
 	name_post_process = process_mode.get_post_process()
 	# writing the names after post processing them
-	with open("error_names.txt", 'w') as f:
+	with open(__folder__.joinpath("error_names.txt"), 'w') as f:
 		f.write(',\n'.join(map(name_post_process, names)))
 
 	print(f"longest error name is '{longest_name_found}' which is {len(longest_name_found)} characters long")
