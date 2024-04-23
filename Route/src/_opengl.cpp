@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "_opengl.h"
 #include <SDL_opengl.h>
+#include "Route/Performance.h"
 
 #ifdef GAPI_GL
 
 LPSDLWindow OpenGL::s_current_window = nullptr;
 
 errno_t OpenGL::init() {
-	if (SDL_Init( SDL_INIT_EVERYTHING ) < 0)
+	if (SDL_InitSubSystem( SDL_INIT_VIDEO ) < 0)
 	{
 		std::cerr << "ERROR: Couldn't init SDL2: " << SDL_GetError() << '\n';
 		return EFAULT;
