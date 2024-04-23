@@ -2,46 +2,74 @@
 #include "Image.h"
 #include <SDL.h>
 
+#define CAST_SF(p) (reinterpret_cast<SDL_Surface *>(p))
+
+static FORCE_INLINE size_t pixel_byte_index( SDL_Surface *surface, uint16_t x, uint16_t y ) {
+	return surface->pitch * y + surface->format->BytesPerPixel * x;
+}
 namespace route
 {
-	struct Image::State
-	{
-		SDL_Surface *surface;
 
-		inline ~State() throw() {
-			SDL_FreeSurface( surface );
-		}
-	};
-
-	Image::Image( Vec2u size ) : m_state{ new State() } {
-		m_state->surface = SDL_CreateRGBSurfaceWithFormat( 0, size.x, size.y, 32, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888 );
+	Image::Image( pixel_pos size )
+		: m_surface{ SDL_CreateRGBSurfaceWithFormat( 0, size.x, size.y, 32, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888 ) } {
+		// TODO: error checking
 	}
 
 	Image::Image( const Image &copy ) {
+		// TODO
 	}
 
 	Image::~Image() {
-		delete m_state;
+		SDL_FreeSurface( CAST_SF( m_surface ) );
 	}
 
-	Vec2u Image::size() const {
-		return Vec2u( m_state->surface->w, m_state->surface->h );
+	Image::pixel_pos Image::size() const {
+		return pixel_pos( CAST_SF( m_surface )->w, CAST_SF( m_surface )->h );
 	}
 
 	uint32_t Image::width() const {
-		return m_state->surface->w;
+		return CAST_SF( m_surface )->w;
 	}
 
 	uint32_t Image::height() const {
-		return m_state->surface->h;
+		return CAST_SF( m_surface )->h;
 	}
 
-	uint32_t *Image::at( const Vec2u &position ) {
-		return nullptr;
+	uint32_t *Image::at( const pixel_pos pos ) {
+		uint8_t *const pixels = static_cast<uint8_t *>(CAST_SF( m_surface )->pixels);
+		return reinterpret_cast<uint32_t *>(&pixels[ pixel_byte_index( CAST_SF( m_surface ), pos.x, pos.y ) ]);
 	}
 
-	const uint32_t *Image::at( const Vec2u &position ) const {
-		return nullptr;
+	const uint32_t *Image::at( const pixel_pos pos ) const {
+		const uint8_t *const pixels = static_cast<uint8_t *>(CAST_SF( m_surface )->pixels);
+		return reinterpret_cast<const uint32_t *>(&pixels[ pixel_byte_index( CAST_SF( m_surface ), pos.x, pos.y ) ]);
+	}
+
+	void Image::put_pixel( pixel_pos pos, const Clr &color ) {
+		// TODO: code
+	}
+
+	const Clr &Image::get_pixel( pixel_pos pos ) const {
+		// TODO: code
+		return {};
+	}
+
+	void Image::put_pixel8( pixel_pos pos, Clr8 color ) {
+		// TODO: code
+	}
+
+	Clr8 Image::get_pixel8( pixel_pos pos ) const {
+		// TODO: code
+		return {};
+	}
+
+	void Image::put_pixel16( pixel_pos pos, const Clr16 &color ) {
+		// TODO: code
+	}
+
+	const Clr16 &Image::get_pixel16( pixel_pos pos ) const {
+		// TODO: code
+		return {};
 	}
 
 }

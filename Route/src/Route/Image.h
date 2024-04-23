@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector.h"
+#include "Color.h"
 
 namespace route
 {
@@ -19,19 +20,30 @@ namespace route
 	class Image
 	{
 	public:
-		Image( Vec2u size );
+		using pixel_pos = Vec2us;
+
+		Image( pixel_pos size );
 		Image( const Image &copy );
 		~Image();
 
-		Vec2u size() const;
+		pixel_pos size() const;
 		uint32_t width() const;
 		uint32_t height() const;
 
-		uint32_t *at( const Vec2u &position );
-		const uint32_t *at( const Vec2u &position ) const;
+		uint32_t *at( pixel_pos position );
+		const uint32_t *at( pixel_pos position ) const;
+
+		void put_pixel( pixel_pos position, const Clr &color );
+		const Clr &get_pixel( pixel_pos position ) const;
+
+		void put_pixel8( pixel_pos position, Clr8 color );
+		Clr8 get_pixel8( pixel_pos position ) const;
+
+		void put_pixel16( pixel_pos position, const Clr16 &color );
+		const Clr16 &get_pixel16( pixel_pos position ) const;
 
 	private:
 		struct State;
-		State *m_state;
+		void *m_surface;
 	};
 }
