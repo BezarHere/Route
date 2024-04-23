@@ -15,6 +15,51 @@
 #endif
 #endif
 
+#if ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))
+#		define RT_FUNCNAME __FUNCTION__
+#else
+#		define RT_FUNCNAME "UNKNOWN"
+#endif
+
+#define RT_FILE    __FILE__
+#define RT_LINE    __LINE__
+
+#define _RT_PRINT_ASSERT(str) fprintf(stderr, "Failed to assert '%s', at " RT_FILE "::" RT_FUNCNAME "::%d\n", str, RT_LINE);
+
+
+#define _RT_ASSERT_ON(expr) if (!(expr)) { _RT_PRINT_ASSERT(#expr); }
+#define _RT_ASSERT_OFF(expr) (void)sizeof(expr)
+
+#ifndef RT_ASSERT_LVL
+#	ifdef _DEBUG
+#		define RT_ASSERT_LVL 2
+#	else
+#		define RT_ASSERT_LVL 1
+#	endif
+#endif
+
+/* Note: the 'JIC' in RT_ASSERT_JIC stands for Just-In-Case */
+
+#if RT_ASSERT_LVL == 0
+#	define RT_ASSERT _RT_ASSERT_OFF
+#	define RT_ASSERT_RELEASE _RT_ASSERT_OFF
+#	define RT_ASSERT_JIC _RT_ASSERT_OFF
+#elif RT_ASSERT_LVL == 1
+#	define RT_ASSERT _RT_ASSERT_OFF
+#	define RT_ASSERT_RELEASE _RT_ASSERT_ON
+#	define RT_ASSERT_JIC _RT_ASSERT_OFF
+#elif RT_ASSERT_LVL == 2
+#	define RT_ASSERT _RT_ASSERT_ON
+#	define RT_ASSERT_RELEASE _RT_ASSERT_ON
+#	define RT_ASSERT_JIC _RT_ASSERT_OFF
+#elif RT_ASSERT_LVL == 3
+#	define RT_ASSERT _RT_ASSERT_ON
+#	define RT_ASSERT_RELEASE _RT_ASSERT_ON
+#	define RT_ASSERT_JIC _RT_ASSERT_ON
+#else
+#error ROUTE: UNKNWON ASSERT LEVEL
+#endif
+
 namespace route
 {
 	using std::array;
