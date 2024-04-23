@@ -32,7 +32,7 @@ namespace route
 
 	};
 
-	template <typename _Ty, size_t _Sz = sizeof(_Ty), typename _Shift = type_shifter<_Ty>>
+	template <typename _Ty, size_t _Sz = sizeof( _Ty ), typename _Shift = type_shifter<_Ty>>
 	class boxed
 	{
 	public:
@@ -126,28 +126,35 @@ namespace route
 			{
 				return *static_cast<value_type *>(m_memory.data());
 			}
+
 		}
 
 		inline const value_type *operator->() const noexcept {
-			return static_cast<const value_type *>(m_memory.data());
+			return reinterpret_cast<const value_type *>(m_memory.data());
 		}
 
 		inline value_type *operator->() noexcept {
-			return static_cast<value_type *>(m_memory.data());
+			return reinterpret_cast<value_type *>(m_memory.data());
 		}
 
 		// derived get
 		template <typename _Ey>
 		inline _Ey &get() noexcept {
 			static_assert(std::is_base_of_v<_Ty, _Ey>, "Can't cast to non-derived");
-			return *dynamic_cast<_Ey *>(m_memory.data());
+			if constexpr (std::is_polymorphic_v<_Ty>)
+				return *dynamic_cast<_Ey *>(m_memory.data());
+			else
+				return *reinterpret_cast<_Ey *>(m_memory.data());
 		}
 
 		// derived get
 		template <typename _Ey>
 		inline const _Ey &get() const noexcept {
 			static_assert(std::is_base_of_v<_Ty, _Ey>, "Can't cast to non-derived");
-			return *dynamic_cast<_Ey *>(m_memory.data());
+			if constexpr (std::is_polymorphic_v<_Ty>)
+				return *dynamic_cast<const _Ey *>(m_memory.data());
+			else
+				return *reinterpret_cast<const _Ey *>(m_memory.data());
 		}
 
 	private:
