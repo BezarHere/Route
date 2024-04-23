@@ -148,10 +148,9 @@ namespace route
 
 	template<typename _Ty>
 	struct ResourceServer<_Ty>::Internal {
-		static_assert(std::is_same_v<Resource, _Ty> || std::is_base_of_v<Resource, _Ty>, "_TY should derive from Resource");
 		// the hash code of the type _Ty shifted left by half the RID's bitwidth
 		static constexpr RID SecurityMask = static_cast<RID>(hash_type<_Ty>()) << RIDHW;
-		// the hash code of the type _Ty shifted right by half the RID's bitwidth xored with the bit-invertex SecurityMask
+		// the hash code of the type _Ty shifted right by half the RID's bitwidth xored with the bit-inverted SecurityMask
 		static constexpr RID SecurityCode = (static_cast<RID>(hash_type<_Ty>()) >> RIDHW) ^ ~SecurityMask;
 
 		RT_FDEF_SICX bool owns_rid( const RID rid ) {

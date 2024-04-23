@@ -13,11 +13,18 @@ namespace route
 		friend Application;
 		friend Renderer;
 	public:
+		static_assert(std::is_same_v<Resource, _Ty> || std::is_base_of_v<Resource, _Ty>, "_TY should derive from Resource");
+
 		struct Internal;
 
 		using resource_type = _Ty;
 		using resource_name_char = char;
 		static constexpr size_t ResourceNameMaxLn = 128;
+
+		/// @returns if the resource server is open and can be used
+		static inline bool usable() {
+			return s_internal != nullptr;
+		}
 
 		static bool is_rid_valid( RID rid );
 
