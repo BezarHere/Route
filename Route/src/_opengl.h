@@ -1,3 +1,8 @@
+/*
+* SHOULD NOT BE INCLUDED
+* INTERNAL USE ONLY
+*/
+
 #pragma once
 #include "pch.h"
 #include "Route/Window.h"

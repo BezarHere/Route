@@ -1,3 +1,7 @@
+/*
+* SHOULD NOT BE INCLUDED
+* INTERNAL USE ONLY
+*/
 #pragma once
 
 #include <array>
