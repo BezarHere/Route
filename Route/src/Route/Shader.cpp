@@ -138,4 +138,8 @@ namespace route
 		return *this;
 	}
 
+	const string &Shader::get_source( ShaderModuleType module_type ) const {
+		return m_source[ (int)module_type ];
+	}
+
 }

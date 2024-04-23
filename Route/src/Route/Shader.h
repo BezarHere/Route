@@ -31,6 +31,21 @@ namespace route
 		Shader &operator=( const Shader &copy );
 		Shader &operator=( Shader &&move ) noexcept;
 
+		inline bool is_valid() const {
+			return m_id != 0;
+		}
+
+		inline operator bool() const {
+			return m_id != 0;
+		}
+
+
+		inline bool operator!() const {
+			return m_id == 0;
+		}
+
+		const string &get_source( ShaderModuleType module_type ) const;
+
 	private:
 		ShaderID m_id;
 		array<string, 3> m_source;
