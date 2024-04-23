@@ -4,7 +4,7 @@
 
 namespace route
 {
-	enum class Error
+	enum class Error : unsigned
 	{
 		Ok,
 		Fault,
@@ -135,7 +135,7 @@ namespace route
 
 namespace std
 {
-	ostream &operator<<( ostream &stream, const route::Error err ) {
+	inline ostream &operator<<( ostream &stream, const route::Error err ) {
 		constexpr char NamesTable[][ 24 ] = {
 			{ "Ok" },
 			{ "Fault" },
@@ -227,6 +227,6 @@ namespace std
 			{ "JustCryAboutIt" },
 			{ "UNKNOWN" }
 		};
-		return stream << NamesTable[ static_cast<int>(err) ];
+		return stream << NamesTable[ static_cast<unsigned>(err) ];
 	}
 }
