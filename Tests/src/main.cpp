@@ -19,12 +19,13 @@ struct A
 		return *this;
 	}
 
-	virtual ~A() {
+	~A() {
 		std::cout << "object destroyed " << this << '\n';
 		delete x;
 	}
 
-	virtual void test() = 0;
+	void test() {
+	}
 	int *x;
 };
 
@@ -34,11 +35,11 @@ struct B : public A
 		std::cout << "B created " << this << '\n';
 	}
 
-	~B() override {
+	~B() {
 		std::cout << "B destroyed " << this << '\n';
 	}
 
-	void test() override {
+	void test() {
 		std::cout << "test called\n";
 	}
 
@@ -50,6 +51,9 @@ volatile ObjectType type = ObjectType::Object2D;
 volatile float val = 0.12;
 int main() {
 	constexpr bool ppp = std::is_assignable_v<route::object, route::object>;
+
+
+
 
 	//{
 	//	imap<std::string> imap{};
