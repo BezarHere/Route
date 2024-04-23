@@ -31,16 +31,16 @@ namespace route
 		static resource_type &get_resource( RID rid );
 		static RID add_resource( resource_type &&resource );
 		static RID add_resource( const resource_type &resource );
-		static void pop_resource( RID rid );
+		static Error pop_resource( RID rid );
 
 		/// @brief 
 		/// @param rid the resource id
 		/// @param name the name to be set, read until encountering a null-termination or reached the ResourceNameMaxLn
-		static void set_resource_name( RID rid, const resource_name_char *name );
+		static Error set_resource_name( RID rid, const resource_name_char *name );
 
 	private:
 		/// @note increments the ref-counter if the server is already running
-		static errno_t _open();
+		static Error _open();
 		/// @returns true if the server closed, false otherwise (decremented ref counter)
 		static bool _close();
 	private:

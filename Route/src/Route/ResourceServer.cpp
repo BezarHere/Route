@@ -97,6 +97,7 @@ namespace route
 
 	template ResourceServer<Resource>;
 	template ResourceServer<GraphicsResource>;
+	template ResourceServer<IOResource>;
 	template ResourceServer<Texture>;
 	template ResourceServer<Material>;
 	template ResourceServer<Shader>;
@@ -109,7 +110,7 @@ namespace route
 		* Template defined below are which resource servers are to be template instanced
 		* Not the best place to put such thing, but it works well
 		*/
-		execute<Resource, GraphicsResource, Texture, Material, Shader, StorageBuffer>( state );
+		execute<Resource, GraphicsResource, IOResource, Texture, Material, Shader, StorageBuffer>( state );
 
 		std::cout << "mem usage diff after " << (state ? "running" : "closing") << " the ResServers: "
 			<< (Performance::get_memory_usage() - mem) << '\n';
@@ -364,12 +365,12 @@ namespace route
 	}
 
 	template<typename _Ty>
-	void ResourceServer<_Ty>::pop_resource( RID rid ) {
+	Error ResourceServer<_Ty>::pop_resource( RID rid ) {
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
 			Logger::write( "from pop_resource: ResourceServer didn't initialize", LogLevel::Error );
-			return;
+			return Error::ServiceNotInitialized;
 		}
 
 		const RIndex rindex = s_internal->get_rindex( rid );
@@ -388,12 +389,12 @@ namespace route
 	}
 
 	template<typename _Ty>
-	void ResourceServer<_Ty>::set_resource_name( RID rid, const resource_name_char *name ) {
+	Error ResourceServer<_Ty>::set_resource_name( RID rid, const resource_name_char *name ) {
 		if (!s_internal)
 		{
 			// TODO: type name in the error msg, please?
 			Logger::write( "from set_resource_name: ResourceServer didn't initialize" );
-			return;
+			return Error::ServiceNotInitialized;
 		}
 
 		const RIndex rindex = s_internal->get_rindex( rid );
@@ -406,11 +407,11 @@ namespace route
 	}
 
 	template<typename _Ty>
-	errno_t ResourceServer<_Ty>::_open() {
+	Error ResourceServer<_Ty>::_open() {
 		if (s_internal)
 		{
 			s_internal->ref_counter++;
-			return 0;
+			return Error::Ok;
 		}
 
 		s_internal = new Internal();
@@ -420,7 +421,7 @@ namespace route
 		std::cout << "VERBOSE: " << typeid(ResourceServer<_Ty>).name() << " opened\n";
 #endif
 
-		return 0;
+		return Error::Ok;
 	}
 
 	template<typename _Ty>
