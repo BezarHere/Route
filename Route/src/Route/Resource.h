@@ -26,10 +26,12 @@ namespace route
 	};
 
 	class GraphicsResourceFactory;
+	class Renderer;
 	// resource that are create or handled by a GraphicsResourceFactory
 	class GraphicsResource : public Resource
 	{
 		friend GraphicsResourceFactory;
+		friend Renderer;
 	public:
 		inline GraphicsResourceFactory *factory() const {
 			return m_factory;
