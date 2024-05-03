@@ -18,19 +18,20 @@ namespace route
 		QueryResult,
 	};
 
-	typedef uint64_t BufferID;
+	typedef vpid_t StorageBufferID;
 
 	class StorageBuffer : public GraphicsResource
 	{
+		friend GraphicsResourceFactory;
 	public:
 		StorageBuffer( const StorageBuffer & );
 		StorageBuffer( StorageBuffer && ) noexcept;
 		StorageBuffer &operator=( const StorageBuffer & );
 		StorageBuffer &operator=( StorageBuffer && ) noexcept;
 
-		static StorageBufType read_type( BufferID bid );
+		static StorageBufType read_type( StorageBufferID bid );
 
-		FORCE_INLINE BufferID id() const {
+		FORCE_INLINE StorageBufferID id() const {
 			return m_id;
 		}
 
@@ -43,9 +44,9 @@ namespace route
 
 		errno_t update( const void *data, size_t size, index_t offset = 0 );
 
-		static BufferID get_bound( uint32_t type );
+		static StorageBufferID get_bound( uint32_t type );
 		static void clear_bound( uint32_t type );
-		static void send_data( BufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset );
+		static void send_data( StorageBufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset );
 
 
 
@@ -54,11 +55,11 @@ namespace route
 
 	private:
 		// can lead to segfaults if not used carefully
-		inline StorageBuffer( const BufferID id ) : m_id{ id } {
+		inline StorageBuffer( const StorageBufferID id ) : m_id{ id } {
 		}
 
 	private:
-		BufferID m_id;
+		StorageBufferID m_id;
 	};
 
 }

@@ -12,11 +12,11 @@
 		 [  type  ] [ name (id) ]
 */
 
-static FORCE_INLINE constexpr uint32_t gl_name( const BufferID id ) {
+static FORCE_INLINE constexpr uint32_t gl_name( const StorageBufferID id ) {
 	return id & 0xFFFF'FFFFULL; // first 32 bits
 }
 
-static FORCE_INLINE constexpr uint32_t gl_type( const BufferID id ) {
+static FORCE_INLINE constexpr uint32_t gl_type( const StorageBufferID id ) {
 	return id >> 32U; // last 32 bits
 }
 
@@ -37,7 +37,7 @@ namespace route
 		return *this;
 	}
 
-	StorageBufType StorageBuffer::read_type( BufferID bid ) {
+	StorageBufType StorageBuffer::read_type( StorageBufferID bid ) {
 #ifdef GAPI_GL
 		switch (gl_type( bid ))
 		{
@@ -81,8 +81,8 @@ namespace route
 		glBindBuffer( gl_type( m_id ), gl_name( m_id ) );
 	}
 
-	BufferID StorageBuffer::get_bound( uint32_t type ) {
-		return (static_cast<BufferID>(type) << 32U) | OpenGL::query_int( type );
+	StorageBufferID StorageBuffer::get_bound( uint32_t type ) {
+		return (static_cast<StorageBufferID>(type) << 32U) | OpenGL::query_int( type );
 	}
 
 	void StorageBuffer::clear_bound( uint32_t type ) {
@@ -95,7 +95,7 @@ namespace route
 		return errno_t();
 	}
 
-	void StorageBuffer::send_data( BufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset ) {
+	void StorageBuffer::send_data( StorageBufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset ) {
 		
 #ifdef GAPI_GL
 		glNamedBufferSubData( gl_name( id ), offset, size, data );
