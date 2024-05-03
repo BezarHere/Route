@@ -8,9 +8,10 @@
 #include "Material.h"
 #include "Shader.h"
 #include "StorageBuffer.h"
+#include "Performance.h"
 
 #include <list>
-#include "Performance.h"
+#include <sstream>
 
 /*
 * # RID should be a uint64_t composing of:
@@ -68,7 +69,17 @@ namespace route
 
 		template <typename _Ty>
 		static inline void open() {
-			ResourceServer<_Ty>::_open();
+			Error err = ResourceServer<_Ty>::_open();
+			if (err != Error::Ok)
+			{
+				std::ostringstream oss{};
+				oss
+					<< "Couldn't start the resource server for the type \"" 
+					<< typeid(_Ty).name()
+					<< "\", error="
+					<< err;
+				Logger::write( oss.str() );
+			}
 		}
 
 		template <typename _Ty>
@@ -376,16 +387,17 @@ namespace route
 		const RIndex rindex = s_internal->get_rindex( rid );
 
 		if (rindex.chunk >= s_internal->chunks.size())
-			return;
+			return Error::InvalidKey;
 
 		if (rindex.element >= Internal::ChunkBufferLength)
-			return;
+			return Error::InvalidKey;
 
 		typename Internal::Element &element = s_internal->chunks[ rindex.chunk ].elements[ rindex.element ];
 		element.value().~resource_type();
 		element.flags = EFlag_None;
 
 		s_internal->chunks[ rindex.chunk ].dec_counter();
+		return Error::Ok;
 	}
 
 	template<typename _Ty>
@@ -404,6 +416,7 @@ namespace route
 			name,
 			_TRUNCATE
 		);
+		return Error::Ok;
 	}
 
 	template<typename _Ty>
