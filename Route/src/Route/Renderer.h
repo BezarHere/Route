@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "Window.h"
 #include "RenderCommandQueue.h"
+#include "GraphicsResourceFactory.h"
 
 
 namespace route
@@ -19,16 +20,25 @@ namespace route
 		vector<command_boxed> commands;
 	};
 
-	class GraphicsResourceFactory;
+	typedef uint64_t RendererLock;
+	typedef void *RendererContext;
 
 	class Renderer
 	{
-		friend GraphicsResourceFactory;
+		friend GphxResFac;
 	public:
 		Renderer( Window &window );
 		~Renderer();
 
 		void render( const Application &app );
+
+		inline GphxResFac &get_factory() {
+			return m_factory;
+		}
+
+		inline const GphxResFac &get_factory() const {
+			return m_factory;
+		}
 
 	private:
 		Renderer( const Renderer & ) = delete;
@@ -37,14 +47,20 @@ namespace route
 		static void bind_shader( const Shader &shader );
 		static void clear_bound_shader();
 
+		static void _bind_buffer( StorageBufferID buffer );
+
 		void _do_command( const RenderCommandQueue::command_boxed &command );
 
 	private:
 		class State;
+		RendererLock m_lock;
 		Window &m_window;
 		State *m_state;
-		void *m_context;
+		RendererContext m_context;
 		RenderCommandQueue m_command_queue;
+
+		// the factory should always be the last member field, so it can be initialized after all other fields
+		GphxResFac m_factory;
 	};
 
 }

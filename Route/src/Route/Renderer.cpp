@@ -33,7 +33,8 @@ namespace route
 		Vec2u last_window_size;
 	};
 
-	Renderer::Renderer( Window &window ) : m_window{ window } {
+	Renderer::Renderer( Window &window )
+		: m_window{ window }, m_factory{ *this } {
 		// TODO: start OpenGL
 		m_context = OpenGL::create_context( static_cast<LPSDLWindow>(m_window.m_handle) );
 		if (!m_context)
@@ -76,7 +77,7 @@ namespace route
 		m_state->last_window_size = wnd_sz;
 
 		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
 		GLuint vbo{ 0 };
 		GLuint vao{ 0 };
@@ -118,6 +119,10 @@ namespace route
 #endif
 	}
 
+	void Renderer::_bind_buffer( StorageBufferID buffer ) {
+#ifdef GAPI_GL
+#endif
+	}
 
 #ifdef GAPI_GL
 	void Renderer::_do_command( const RenderCommandQueue::command_boxed &command ) {
@@ -127,7 +132,8 @@ namespace route
 		case CommandType::BindVertexSource:
 			{
 				const auto &c = command.get<rcq::CommandBindVertexSource>();
-				ResourceServer<StorageBuffer>::get_resource( c.vertex_buffer );
+				const auto &vertex_buf = ResourceServer<StorageBuffer>::get_resource( c.vertex_buffer );
+				RT_ASSERT_RELEASE( vertex_buf.type() == StorageBufType::Vertex );
 			}
 		default:
 			break;
