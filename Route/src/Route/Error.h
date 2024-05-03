@@ -1,5 +1,4 @@
 #pragma once
-#include <errno.h>
 #include <ostream>
 
 namespace route
@@ -236,4 +235,9 @@ namespace std
 		};
 		return stream << NamesTable[ static_cast<unsigned>(err) ];
 	}
+
+	// sadly, it doesn't work :[
+	//inline operator bool( const route::Error err ) {
+	//	return err != route::Error::Ok;
+	//}
 }
