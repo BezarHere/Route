@@ -83,7 +83,7 @@ namespace route
 
 	typedef size_t index_t;
 	typedef uintptr_t refc_t;
-	typedef uintptr_t vpid_t; /* virtual pointer id, can substitute a pointer or an index in a state map */
+	typedef void *vpid_t; /* virtual pointer id, can substitute a index in a state map */
 	_INLINE_VAR constexpr index_t npos = (size_t)-1;
 
 	_INLINE_VAR constexpr real_t Pi = 3.1415926f;
