@@ -35,6 +35,14 @@ namespace route
 
 	typedef vpid_t TextureID;
 
+	struct TextureInfo
+	{
+		TextureType type;
+		TextureFormat format;
+		Vec3u extent;
+		uint32_t mip_levels;
+	};
+
 	class Texture : public GraphicsResource
 	{
 	public:
@@ -44,9 +52,6 @@ namespace route
 
 	private:
 		TextureID m_id;
-		TextureType m_type;
-		TextureFormat m_format;
-		Vec3u m_extent;
-		uint32_t m_mip_levels;
+		TextureInfo m_info;
 	};
 }
