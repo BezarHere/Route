@@ -23,12 +23,15 @@ namespace route
     InvalidRange,
     InvalidKey,
     InvalidFlags,
+
     InvalidOperation,
+    IllegalOperation,
+    OperationIncomplete,
 
     Overflow,
     StackOverflow,
     Underflow,
-    StackOverflow,
+    StackUnderflow,
 
     MemoryError,
     OutOfMemory,
@@ -102,7 +105,7 @@ namespace route
     NoLock,
     NoSystem,
 
-    OutOfDate,
+    Expired,
     InProgress,
 
     NoOwner,
@@ -136,8 +139,7 @@ namespace route
     ServiceLocked,
     ServiceNotInitialized,
 
-    InvalidFramebufferOperation,
-    FramebufferIncomplete,
+    ObjectIncomplete,
 
     JustCryAboutIt,
 
@@ -148,7 +150,7 @@ namespace route
 namespace std
 {
   inline ostream &operator<<( ostream &stream, const route::Error err ) {
-    constexpr char NamesTable[][ 32 ] = {
+    constexpr char NamesTable[][ 24 ] = {
       { "Ok" },
       { "Fault" },
       { "Busy" },
@@ -165,10 +167,12 @@ namespace std
       { "InvalidKey" },
       { "InvalidFlags" },
       { "InvalidOperation" },
+      { "IllegalOperation" },
+      { "OperationIncomplete" },
       { "Overflow" },
       { "StackOverflow" },
       { "Underflow" },
-      { "StackOverflow" },
+      { "StackUnderflow" },
       { "MemoryError" },
       { "OutOfMemory" },
       { "Invalid" },
@@ -219,7 +223,7 @@ namespace std
       { "NoCache" },
       { "NoLock" },
       { "NoSystem" },
-      { "OutOfDate" },
+      { "Expired" },
       { "InProgress" },
       { "NoOwner" },
       { "NoData" },
@@ -244,8 +248,7 @@ namespace std
       { "ServiceUnavailable" },
       { "ServiceLocked" },
       { "ServiceNotInitialized" },
-      { "InvalidFramebufferOperation" },
-      { "FramebufferIncomplete" },
+      { "ObjectIncomplete" },
       { "JustCryAboutIt" },
       { "UNKNOWN" }
     };
