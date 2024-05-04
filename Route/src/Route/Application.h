@@ -13,6 +13,12 @@ namespace route
 		};
 	};
 
+	enum class GraphicsAPI
+	{
+		OpenGL,
+		//Vulkan,
+	};
+
 	struct AppConfig
 	{
 		uint32_t max_frames_per_sec;
@@ -51,6 +57,11 @@ namespace route
 		errno_t start();
 		void stop();
 
+		// default to opengl
+		static inline GraphicsAPI graphics_api() {
+			return s_graphics_api;
+		}
+
 	private:
 		void _process();
 		void _graphics();
@@ -83,5 +94,7 @@ namespace route
 		AppConfig m_config;
 
 		time_point_us m_last_frame;
+
+		static GraphicsAPI s_graphics_api;
 	};
 }

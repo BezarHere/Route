@@ -14,6 +14,8 @@
 namespace route
 {
 
+	GraphicsAPI Application::s_graphics_api = GraphicsAPI::OpenGL;
+
 	struct Application::threading
 	{
 		// for updating caches
