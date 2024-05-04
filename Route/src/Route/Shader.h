@@ -15,21 +15,12 @@ namespace route
 	class Shader : public GraphicsResource
 	{
 		friend Renderer;
+		friend GraphicsResourceFactory;
 	public:
-		// default shader
-		Shader();
-
-		Shader( const char *source, ShaderType type );
-
-		// an invalid shader
-		Shader( std::nullptr_t );
-
-		Shader( const Shader &copy );
 		Shader( Shader &&move ) noexcept;
 
 		~Shader() noexcept;
 
-		Shader &operator=( const Shader &copy );
 		Shader &operator=( Shader &&move ) noexcept;
 
 		inline bool is_valid() const {
@@ -57,6 +48,8 @@ namespace route
 		inline const string &get_source() const {
 			return m_source;
 		}
+	private:
+		Shader( const char *source, ShaderType type, GraphicsResourceFactory &factory );
 
 	private:
 		ShaderType m_type;

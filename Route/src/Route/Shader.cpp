@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Shader.h"
+#include "GraphicsResourceFactory.h"
 #include "../pch.h"
 #include "Logger.h"
 
@@ -8,7 +9,7 @@
 static inline constexpr ShaderID to_native_type( ShaderType type ) {
 #ifdef GAPI_GL
   constexpr GLuint Map[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER };
-  return ShaderID(Map[ (int)type ]);
+  return ShaderID( Map[ (int)type ] );
 #endif
 }
 
@@ -54,21 +55,13 @@ static inline ShaderID create_shader( ShaderType type, const char *src ) {
   return reinterpret_cast<ShaderID>(id);
 }
 
-static inline void destroy_shader( ShaderID module ) {
-#ifdef GAPI_GL
-  GL_CALL( glDeleteShader( (GLuint)module ) );
-#endif
-}
-
 namespace route
 {
   static const string EmptyStr = "";
 
-  Shader::Shader() {
-    // TODO: default shader
-  }
 
-  Shader::Shader( const char *source, ShaderType type ) : m_source{ source ? source : "" }, m_type{ type } {
+  Shader::Shader( const char *source, ShaderType type, GraphicsResourceFactory &factory )
+    : GraphicsResource( factory ), m_source{ source ? source : "" }, m_type{ type } {
     if (!source)
     {
       Logger::write( "Null source passed to shader", LogLevel::Error );
@@ -79,27 +72,22 @@ namespace route
     m_id = create_shader( type, source );
   }
 
-  Shader::Shader( std::nullptr_t ) : m_id{}, m_source{} {
-  }
-
-  Shader::Shader( const Shader &copy ) : Shader( copy.m_source.c_str(), copy.m_type ) {
-  }
-
   Shader::Shader( Shader &&move ) noexcept
-    : m_id{ move.m_id }, m_type{ move.m_type }, m_source{ move.m_source } {
+    : GraphicsResource( move.get_factory() ), m_id{ move.m_id }, m_type{ move.m_type }, m_source{ move.m_source } {
     move.m_id = NULL;
   }
 
   Shader::~Shader() noexcept {
-    destroy_shader( m_id );
-  }
-
-  Shader &Shader::operator=( const Shader &copy ) {
-    return *this = Shader( copy.m_source.c_str(), copy.m_type );
+    get_factory()._queue_free_shader( *this );
   }
 
   Shader &Shader::operator=( Shader &&move ) noexcept {
-    destroy_shader( m_id );
+    if (&move.get_factory() != &get_factory())
+    {
+      std::_Xruntime_error( "Can't assign two shaders from different factories" );
+    }
+
+    get_factory()._queue_free_shader( *this );
     m_id = move.m_id;
     m_type = move.m_type;
     m_source = move.m_source;
