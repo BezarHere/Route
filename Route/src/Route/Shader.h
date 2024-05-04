@@ -5,7 +5,7 @@ namespace route
 {
 	typedef vpid_t ShaderID;
 
-	enum class ShaderModuleType
+	enum class ShaderType
 	{
 		Vertex,
 		Fragment,
@@ -19,14 +19,15 @@ namespace route
 		// default shader
 		Shader();
 
-		Shader( const string &vertex, const string &fragment );
-		Shader( const string &vertex, const string &fragment, const string &geometry );
+		Shader( const char *source, ShaderType type );
 
 		// an invalid shader
 		Shader( std::nullptr_t );
 
 		Shader( const Shader &copy );
 		Shader( Shader &&move ) noexcept;
+
+		~Shader() noexcept;
 
 		Shader &operator=( const Shader &copy );
 		Shader &operator=( Shader &&move ) noexcept;
@@ -44,11 +45,23 @@ namespace route
 			return m_id == 0;
 		}
 
-		const string &get_source( ShaderModuleType module_type ) const;
+		inline ShaderID get_id() const {
+			return m_id;
+		}
+
+		inline ShaderType get_type() const {
+			return m_type;
+		}
+
+
+		inline const string &get_source() const {
+			return m_source;
+		}
 
 	private:
+		ShaderType m_type;
 		ShaderID m_id;
-		array<string, 3> m_source;
+		string m_source;
 	};
 
 }

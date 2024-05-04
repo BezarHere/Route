@@ -3,17 +3,24 @@
 #include "../pch.h"
 #include "Logger.h"
 
-typedef intptr_t ShaderModuleID;
 
-
-
-static inline constexpr ShaderModuleID to_native_type( ShaderModuleType type ) {
-	constexpr ShaderModuleID Map[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER };
-	return Map[ (int)type ];
+// using a semi-bad return type for vulkan (void ptr) & GL (name-id int)
+static inline constexpr ShaderID to_native_type( ShaderType type ) {
+#ifdef GAPI_GL
+	constexpr GLuint Map[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER };
+	return reinterpret_cast<ShaderID>(Map[ (int)type ]);
+#endif
 }
 
-static inline ShaderModuleID create_shader( ShaderModuleType type, const char *src ) {
-	ShaderModuleID id = glCreateShader( to_native_type( type ) );
+static inline ShaderID create_shader( ShaderType type, const char *src ) {
+	GLuint id = glCreateShader( reinterpret_cast<GLuint>(to_native_type( type )) );
+	
+	// if the id is invalid
+	if (id == 0)
+	{
+		Logger::write( format_join("Failed to create shader: ", glGetLastError()));
+		return 0;
+	}
 
 	char header[ 32 ]{};
 	sprintf_s( header, "#version %u\n", OpenGL::ContextVersion.major * 100 + OpenGL::ContextVersion.minor * 10 );
@@ -44,44 +51,12 @@ static inline ShaderModuleID create_shader( ShaderModuleType type, const char *s
 		return 0;
 	}
 
-	return id;
+	return reinterpret_cast<ShaderID>(id);
 }
 
-static inline ShaderID compile_program( ShaderModuleID vertex, ShaderModuleID fragment, ShaderModuleID geometry ) {
-	ShaderID prog = glCreateProgram();
-	GL_CALL( glAttachShader( prog, vertex ) );
-	GL_CALL( glAttachShader( prog, fragment ) );
-
-	if (geometry)
-	{
-		GL_CALL( glAttachShader( prog, geometry ) );
-	}
-
-	GL_CALL( glLinkProgram( prog ) );
-
-	GLint program_linked;
-	glGetProgramiv( prog, GL_LINK_STATUS, &program_linked );
-	if (!program_linked)
-	{
-		GLsizei len = 0;
-		GLchar msg[ 1024 ];
-		glGetProgramInfoLog( prog, 1024, &len, msg );
-		Logger::write( string( "GL::Program error: " ) + msg, LogLevel::Error );
-		glDeleteProgram( prog );
-		return 0;
-	}
-	return prog;
-}
-
-static inline void destroy_program( ShaderID prog ) {
+static inline void destroy_shader( ShaderID module ) {
 #ifdef GAPI_GL
-	GL_CALL( glDeleteProgram( prog ) );
-#endif
-}
-
-static inline void destroy_shader_module( ShaderModuleID module ) {
-#ifdef GAPI_GL
-	GL_CALL( glDeleteShader( module ) );
+	GL_CALL( glDeleteShader( (GLuint)module ) );
 #endif
 }
 
@@ -93,52 +68,47 @@ namespace route
 		// TODO: default shader
 	}
 
-	Shader::Shader( const string &vertex, const string &fragment ) : Shader( vertex, fragment, EmptyStr ) {
-	}
+	Shader::Shader( const char *source, ShaderType type ) : m_source{ source ? source : "" }, m_type{ type } {
+		if (!source)
+		{
+			Logger::write( "Null source passed to shader", LogLevel::Error );
+			m_id = ShaderID{};
+			return;
+		}
 
-	Shader::Shader( const string &vertex, const string &fragment, const string &geometry )
-		: m_id{}, m_source{ vertex, fragment, geometry } {
-		ShaderModuleID shader_vx =
-			create_shader( ShaderModuleType::Vertex, vertex.c_str() );
-
-		ShaderModuleID shader_fg =
-			create_shader( ShaderModuleType::Fragment, fragment.c_str() );
-
-		ShaderModuleID shader_ge =
-			geometry.empty() ? NULL : create_shader( ShaderModuleType::Geometry, geometry.c_str() );
-
-		m_id = compile_program( shader_vx, shader_fg, shader_ge );
-
-		destroy_shader_module( shader_vx );
-		destroy_shader_module( shader_fg );
-		destroy_shader_module( shader_ge );
+		m_id = create_shader( type, source );
 	}
 
 	Shader::Shader( std::nullptr_t ) : m_id{}, m_source{} {
 	}
 
-	Shader::Shader( const Shader &copy ) : Shader( copy.m_source[ 0 ], copy.m_source[ 1 ], copy.m_source[ 2 ] ) {
+	Shader::Shader( const Shader &copy ) : Shader( copy.m_source.c_str(), copy.m_type ) {
 	}
 
 	Shader::Shader( Shader &&move ) noexcept
-		: m_id{ move.m_id }, m_source{ move.m_source } {
+		: m_id{ move.m_id }, m_type{ move.m_type }, m_source{ move.m_source } {
 		move.m_id = NULL;
+	}
+
+	Shader::~Shader() noexcept {
+		destroy_shader( m_id );
 	}
 
 	Shader &Shader::operator=( const Shader &copy ) {
-		return *this = Shader( copy.m_source[ 0 ], copy.m_source[ 1 ], copy.m_source[ 2 ] );
+		return *this = Shader( copy.m_source.c_str(), copy.m_type);
 	}
 
 	Shader &Shader::operator=( Shader &&move ) noexcept {
-		destroy_program( m_id );
+		destroy_shader( m_id );
 		m_id = move.m_id;
-		move.m_id = NULL;
-
+		m_type = move.m_type;
 		m_source = move.m_source;
+
+		move.m_id = NULL;
 		return *this;
 	}
 
-	const string &Shader::get_source( ShaderModuleType module_type ) const {
+	const string &Shader::get_source( ShaderType module_type ) const {
 		return m_source[ (int)module_type ];
 	}
 
