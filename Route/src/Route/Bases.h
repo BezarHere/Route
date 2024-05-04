@@ -60,6 +60,15 @@
 #error ROUTE: UNKNWON ASSERT LEVEL
 #endif
 
+#ifndef RT_64X
+
+#if defined(__linux) // VVVV __linux VVVV
+#define RT_64X // TODO: linux nerds, how to get if we at a 64x or 86x/32x
+#elif _WIN64 // ^^^^ __linux ^^^^ / VVVV _WIN64 VVVV
+#define RT_64X
+#endif // ^^^^ _WIN64 ^^^^
+#endif // ^^^^ RT_64X ^^^^
+
 namespace route
 {
   using std::array;
@@ -84,6 +93,15 @@ namespace route
   typedef size_t index_t;
   typedef uintptr_t refc_t;
   typedef void *vpid_t; /* virtual pointer id, can substitute a index in a state map */
+
+#ifdef RT_64X // VVVV RT_64X
+  typedef int32_t half_intptr_t;
+  typedef uint32_t half_uintptr_t;
+#else // ^^^^ RT_64X
+  typedef int16_t half_intptr_t;
+  typedef uint16_t half_uintptr_t;
+#endif // ^^^^ !RT_64X
+
   _INLINE_VAR constexpr index_t npos = (size_t)-1;
 
   _INLINE_VAR constexpr real_t Pi = 3.1415926f;
@@ -246,10 +264,10 @@ namespace route
     inline Blob( _Ty p_data[ _Sz ] ) : length{ _Sz }, data{ p_data } {
     }
 
-    inline Blob( _Ty *p_data, size_t len ) : length{ len }, data{ p_data } {
+    inline explicit Blob( _Ty *p_data, size_t len ) : length{ len }, data{ p_data } {
     }
 
-    inline Blob( const std::initializer_list<_Ty> &list ) : length{ list.size() }, data{ list.begin() } {
+    inline Blob( std::initializer_list<_Ty> &&list ) : length{ list.size() }, data{ const_cast<_Ty *>(list.begin()) } {
     }
 
     size_t length = 0;
