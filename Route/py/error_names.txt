@@ -6,6 +6,7 @@
 { "Full" },
 { "NotFull" },
 { "OutOfRange" },
+{ "InvalidValue" },
 { "InvalidEnum" },
 { "InvalidIndex" },
 { "InvalidLength" },
