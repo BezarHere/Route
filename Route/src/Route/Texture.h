@@ -46,9 +46,13 @@ namespace route
 	class Texture : public GraphicsResource
 	{
 	public:
-		inline Texture() {
+		inline Texture(GraphicsResourceFactory &factory) : GraphicsResource(factory) {
 		}
 		Texture( const Texture & );
+
+		inline TextureID get_id() const {
+			return m_id;
+		}
 
 	private:
 		TextureID m_id;
