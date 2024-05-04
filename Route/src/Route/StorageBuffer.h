@@ -16,6 +16,8 @@ namespace route
 		CopySource,
 		CopyDestination,
 		QueryResult,
+
+		_Max,
 	};
 
 	typedef vpid_t StorageBufferID;
@@ -47,11 +49,6 @@ namespace route
 		static StorageBufferID get_bound( uint32_t type );
 		static void clear_bound( uint32_t type );
 		static void send_data( StorageBufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset );
-
-
-
-		
-		
 
 	private:
 		// can lead to segfaults if not used carefully
