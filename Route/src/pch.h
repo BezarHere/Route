@@ -43,21 +43,21 @@ if (err) \
 	{ char buf[256]{}; sprintf_s(buf, std::size(buf), "Failed to call " #call " at " __FILE__ ":%u, returned %d", __LINE__, err); Logger::write( buf, LogLevel::Error ); statment; }\
 }
 
-template <typename... VArgs>
-static inline std::string format_join( const VArgs &... args ) {
-  std::istringstream ss{ 256 };
-  _format_join( ss, args... );
-  return ss.str();
+template <typename T>
+static inline void _format_join( std::ostringstream &stream, const T &value ) {
+  stream << value;
 }
 
 template <typename T1, typename T2, typename... VArgs>
-static inline void _format_join( std::istringstream &stream, const T1 &value1, const T2 &value2, const VArgs &... args ) {
-  ss << value;
-  return format_join( stream, value2, args... );
+static inline void _format_join( std::ostringstream &stream, const T1 &value1, const T2 &value2, const VArgs &... args ) {
+  stream << value1;
+  return _format_join( stream, value2, args... );
 }
 
-template <typename T>
-static inline void _format_join( std::istringstream &stream, const T &value ) {
-  ss << value;
+template <typename... VArgs>
+static inline std::string format_join( const VArgs &... args ) {
+  std::ostringstream ss{ 256 };
+  _format_join( ss, args... );
+  return ss.str();
 }
 
