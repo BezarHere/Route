@@ -150,7 +150,7 @@ namespace route
 namespace std
 {
   inline ostream &operator<<( ostream &stream, const route::Error err ) {
-    constexpr char NamesTable[][ 24 ] = {
+    constexpr ostream::char_type NamesTable[][ 24 ] = {
       { "Ok" },
       { "Fault" },
       { "Busy" },
@@ -252,7 +252,7 @@ namespace std
       { "JustCryAboutIt" },
       { "UNKNOWN" }
     };
-    return stream << NamesTable[ static_cast<unsigned>(err) ];
+    return stream << NamesTable[ static_cast<size_t>(err) ];
   }
 
   // sadly, it doesn't work :[
