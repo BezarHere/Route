@@ -20,6 +20,12 @@ namespace route
 		vector<command_boxed> commands;
 	};
 
+	struct RendererState
+	{
+		array<StorageBufferID, (int)StorageBufType::_Max> Buffers{};
+		array<ShaderID, 3> Shaders{};
+	};
+
 	typedef uint64_t RendererLock;
 	typedef void *RendererContext;
 
@@ -40,25 +46,33 @@ namespace route
 			return m_factory;
 		}
 
+		void bind_buffer( const StorageBuffer &buffer );
+		void bind_shader( const Shader &shader );
+
+		inline StorageBufferID get_bound_buffer( StorageBufType type ) const {
+			return m_state.Buffers[ static_cast<size_t>(type) ];
+		}
+
+		inline StorageBufferID get_bound_shader( ShaderType type ) const {
+			return m_state.Shaders[ static_cast<size_t>(type) ];
+		}
+
 	private:
 		Renderer( const Renderer & ) = delete;
 		Renderer &operator =( const Renderer & ) = delete;
 
-		static void bind_shader( const Shader &shader );
-		static void clear_bound_shader();
-
-		static void _bind_buffer( StorageBufferID buffer );
-
 		void _do_command( const RenderCommandQueue::command_boxed &command );
 
 	private:
-		class State;
+		class APIState;
 		RendererLock m_lock;
 		Window &m_window;
-		State *m_state;
-		RendererContext m_context;
+		RendererState m_state;
+
 		RenderCommandQueue m_command_queue;
 
+		RendererContext m_context;
+		APIState *m_api_state;
 		// the factory should always be the last member field, so it can be initialized after all other fields
 		GphxResFac m_factory;
 	};
