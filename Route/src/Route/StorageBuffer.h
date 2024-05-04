@@ -31,24 +31,17 @@ namespace route
 		StorageBuffer &operator=( const StorageBuffer & );
 		StorageBuffer &operator=( StorageBuffer && ) noexcept;
 
-		static StorageBufType read_type( StorageBufferID bid );
-
-		FORCE_INLINE StorageBufferID id() const {
+		FORCE_INLINE StorageBufferID get_id() const {
 			return m_id;
 		}
 
-		FORCE_INLINE StorageBufType type() const {
-			return read_type( m_id );
+		FORCE_INLINE StorageBufType get_type() const {
+			return m_type;
 		}
 
-		size_t size() const;
-		void bind();
-
-		errno_t update( const void *data, size_t size, index_t offset = 0 );
-
-		static StorageBufferID get_bound( uint32_t type );
-		static void clear_bound( uint32_t type );
-		static void send_data( StorageBufferID id, const void *data, ptrdiff_t size, ptrdiff_t offset );
+		FORCE_INLINE size_t get_size() const {
+			return m_size;
+		}
 
 	private:
 		// can lead to segfaults if not used carefully
@@ -57,6 +50,8 @@ namespace route
 
 	private:
 		StorageBufferID m_id;
+		StorageBufType m_type;
+		size_t m_size;
 	};
 
 }
