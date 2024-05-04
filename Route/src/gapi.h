@@ -8,11 +8,26 @@
 // you can define:
 #define GAPI_GL
 //#define GAPI_VK
-//#define GAPI_DX
 
+#if defined(GAPI_GL) && !defined(GAPI_VK)
+#define GAPI_GL_ONLY
+#elif !defined(GAPI_GL) && defined(GAPI_VK)
+#define GAPI_VK_ONLY
+#endif
 
+#ifdef GAPI_GL_ONLY
+#define GAPI_IF_GL(expr) if constexpr (true) // no need to check, we only have opengl
+#elif defined(GAPI_GL)
+#define GAPI_IF_GL(expr) if (expr) // do check, we can be using vulkan
+#endif
 
-#ifdef GAPI_GL // VVVV OPENGL
+#ifdef GAPI_VK_ONLY
+#define GAPI_IF_VK(expr) if constexpr (true) // no need to check, we only have vulkan
+#elif defined(GAPI_VK)
+#define GAPI_IF_VK(expr) if (expr) // do check, we can be using opengl
+#endif
+
+#ifdef GAPI_GL // VVVV OPENGL VVVV
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -69,8 +84,8 @@ if (err) { char msg[1024]{}; sprintf_s(msg, "GL::Error calling '" #call "', code
 #define GL_CALL_RET(call, ret) (void)(call)
 #endif
 
-#elif defined(GAPI_VK) // ^^^^ OPENGL / VVVV VULKAN
+#elif defined(GAPI_VK) // ^^^^ OPENGL ^^^^ / VVVV VULKAN VVVV
 
 #include <vulkan/vulkan.hpp>
 
-#endif // ^^^^ VULKAN
+#endif // ^^^^ VULKAN ^^^^
