@@ -11,8 +11,11 @@ namespace route
   public:
     static constexpr size_t MaxShadersLinked = 6;
 
+    ShaderProgram();
     ShaderProgram( const Shader &vertex, const Shader &fragment );
     ShaderProgram( const Blob<const Shader *> &pShaders );
+    ShaderProgram( ShaderProgram && );
+    ShaderProgram &operator=( ShaderProgram && );
     ~ShaderProgram() noexcept;
 
     inline ShaderProgramID get_id() const {
@@ -20,9 +23,7 @@ namespace route
     }
 
   private:
-    ShaderProgram( ShaderProgram && ) = delete;
     ShaderProgram( const ShaderProgram & ) = delete;
-    ShaderProgram &operator=( ShaderProgram && ) = delete;
     ShaderProgram &operator=( const ShaderProgram & ) = delete;
 
   private:

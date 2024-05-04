@@ -3,20 +3,6 @@
 #include "ShaderProgram.h"
 #include "Logger.h"
 
-
-static inline ShaderProgramID compile_program( const Blob<const Shader *> &shaders ) {
-  ShaderID ids[ ShaderProgram::MaxShadersLinked ] = {};
-  const size_t len = std::min( shaders.length, std::size( ids ) );
-
-  for (size_t i = 0; i < len; i++)
-  {
-    // TODO: check for null shaders or invalid shader ids
-    ids[ i ] = shaders.data[ i ]->get_id();
-  }
-
-  return compile_program( { ids, len } );
-}
-
 static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
   GLuint prog = glCreateProgram();
 
@@ -38,7 +24,7 @@ static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
 
   GLint program_linked;
   glGetProgramiv( prog, GL_LINK_STATUS, &program_linked );
-  
+
   if (!program_linked)
   {
     GLsizei len = 0;
@@ -52,6 +38,19 @@ static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
   return (ShaderID)prog;
 }
 
+static inline ShaderProgramID compile_program( const Blob<const Shader *> &shaders ) {
+  ShaderID ids[ ShaderProgram::MaxShadersLinked ] = {};
+  const size_t len = std::min( shaders.length, std::size( ids ) );
+
+  for (size_t i = 0; i < len; i++)
+  {
+    // TODO: check for null shaders or invalid shader ids
+    ids[ i ] = shaders.data[ i ]->get_id();
+  }
+
+  return compile_program( Blob<ShaderID>( ids, len ) );
+}
+
 static inline void destroy_program( ShaderProgramID prog ) {
 #ifdef GAPI_GL
   GL_CALL( glDeleteProgram( (GLuint)prog ) );
@@ -60,12 +59,26 @@ static inline void destroy_program( ShaderProgramID prog ) {
 
 namespace route
 {
+  ShaderProgram::ShaderProgram() : m_id{} {
+  }
+
   ShaderProgram::ShaderProgram( const Shader &vertex, const Shader &fragment ) : ShaderProgram( { &vertex, &fragment } ) {
   }
 
   ShaderProgram::ShaderProgram( const Blob<const Shader *> &pShaders )
     : m_id{ compile_program( pShaders ) } {
 
+  }
+
+  ShaderProgram::ShaderProgram( ShaderProgram &&move ) : m_id{ move.m_id } {
+    move.m_id = 0;
+  }
+
+  ShaderProgram &ShaderProgram::operator=( ShaderProgram &&move ) {
+    destroy_program( m_id );
+    m_id = move.m_id;
+    move.m_id = 0;
+    return *this;
   }
 
   ShaderProgram::~ShaderProgram() noexcept {
