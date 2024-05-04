@@ -3,13 +3,13 @@
 #include "ShaderProgram.h"
 #include "Logger.h"
 
-static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
+static inline PipelineID compile_program( const Blob<ShaderID> &shaders ) {
   GLuint prog = glCreateProgram();
 
   if (prog == 0)
   {
     Logger::write( format_join( "Failed to create shader program: ", glErrRT( glGetLastError() ) ) );
-    return ShaderProgramID();
+    return PipelineID();
   }
 
   for (size_t i = 0; i < shaders.length; i++)
@@ -38,8 +38,8 @@ static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
   return (ShaderID)prog;
 }
 
-static inline ShaderProgramID compile_program( const Blob<const Shader *> &shaders ) {
-  ShaderID ids[ ShaderProgram::MaxShadersLinked ] = {};
+static inline PipelineID compile_program( const Blob<const Shader *> &shaders ) {
+  ShaderID ids[ Pipeline::MaxShadersLinked ] = {};
   const size_t len = std::min( shaders.length, std::size( ids ) );
 
   for (size_t i = 0; i < len; i++)
@@ -51,7 +51,7 @@ static inline ShaderProgramID compile_program( const Blob<const Shader *> &shade
   return compile_program( Blob<ShaderID>( ids, len ) );
 }
 
-static inline void destroy_program( ShaderProgramID prog ) {
+static inline void destroy_program( PipelineID prog ) {
 #ifdef GAPI_GL
   GL_CALL( glDeleteProgram( (GLuint)prog ) );
 #endif
@@ -59,29 +59,29 @@ static inline void destroy_program( ShaderProgramID prog ) {
 
 namespace route
 {
-  ShaderProgram::ShaderProgram() : m_id{} {
+  Pipeline::Pipeline() : m_id{} {
   }
 
-  ShaderProgram::ShaderProgram( const Shader &vertex, const Shader &fragment ) : ShaderProgram( { &vertex, &fragment } ) {
+  Pipeline::Pipeline( const Shader &vertex, const Shader &fragment ) : Pipeline( { &vertex, &fragment } ) {
   }
 
-  ShaderProgram::ShaderProgram( const Blob<const Shader *> &pShaders )
+  Pipeline::Pipeline( const Blob<const Shader *> &pShaders )
     : m_id{ compile_program( pShaders ) } {
 
   }
 
-  ShaderProgram::ShaderProgram( ShaderProgram &&move ) : m_id{ move.m_id } {
+  Pipeline::Pipeline( Pipeline &&move ) : m_id{ move.m_id } {
     move.m_id = 0;
   }
 
-  ShaderProgram &ShaderProgram::operator=( ShaderProgram &&move ) {
+  Pipeline &Pipeline::operator=( Pipeline &&move ) {
     destroy_program( m_id );
     m_id = move.m_id;
     move.m_id = 0;
     return *this;
   }
 
-  ShaderProgram::~ShaderProgram() noexcept {
+  Pipeline::~Pipeline() noexcept {
     destroy_program( m_id );
   }
 }
