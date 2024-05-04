@@ -8,7 +8,7 @@
 static inline constexpr ShaderID to_native_type( ShaderType type ) {
 #ifdef GAPI_GL
   constexpr GLuint Map[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER };
-  return reinterpret_cast<ShaderID>(Map[ (int)type ]);
+  return ShaderID(Map[ (int)type ]);
 #endif
 }
 
