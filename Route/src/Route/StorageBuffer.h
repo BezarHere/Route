@@ -3,55 +3,55 @@
 
 namespace route
 {
-	enum class StorageBufType
-	{
-		Invalid = -1,
-		Vertex,
-		Index,
-		Texture,
-		UniformBlock,
-		ShaderStorage,
-		TransformFeedback,
-		DrawIndirect,
-		CopySource,
-		CopyDestination,
-		QueryResult,
+  enum class StorageBufType
+  {
+    Invalid = -1,
+    Vertex,
+    Index,
+    Texture,
+    UniformBlock,
+    ShaderStorage,
+    TransformFeedback,
+    DrawIndirect,
+    CopySource,
+    CopyDestination,
+    QueryResult,
 
-		_Max,
-	};
+    _Max,
+  };
 
-	typedef vpid_t StorageBufferID;
+  typedef vpid_t StorageBufferID;
 
-	class StorageBuffer : public GraphicsResource
-	{
-		friend GraphicsResourceFactory;
-	public:
-		StorageBuffer( const StorageBuffer & );
-		StorageBuffer( StorageBuffer && ) noexcept;
-		StorageBuffer &operator=( const StorageBuffer & );
-		StorageBuffer &operator=( StorageBuffer && ) noexcept;
+  class StorageBuffer : public GraphicsResource
+  {
+    friend GraphicsResourceFactory;
+  public:
+    StorageBuffer( StorageBuffer && ) noexcept;
+    StorageBuffer &operator=( StorageBuffer && ) noexcept;
+    ~StorageBuffer() noexcept;
 
-		FORCE_INLINE StorageBufferID get_id() const {
-			return m_id;
-		}
+    FORCE_INLINE StorageBufferID get_id() const {
+      return m_id;
+    }
 
-		FORCE_INLINE StorageBufType get_type() const {
-			return m_type;
-		}
+    FORCE_INLINE StorageBufType get_type() const {
+      return m_type;
+    }
 
-		FORCE_INLINE size_t get_size() const {
-			return m_size;
-		}
+    FORCE_INLINE size_t get_size() const {
+      return m_size;
+    }
 
-	private:
-		// can lead to segfaults if not used carefully
-		inline StorageBuffer( const StorageBufferID id ) : m_id{ id } {
-		}
+    Error update( uint8_t *data, size_t length, size_t offset = 0U );
 
-	private:
-		StorageBufferID m_id;
-		StorageBufType m_type;
-		size_t m_size;
-	};
+  private:
+    // can lead to segfaults if not used carefully
+    StorageBuffer( StorageBufferID id, StorageBufType type, size_t size, factory &factory );
+
+  private:
+    StorageBufferID m_id;
+    StorageBufType m_type;
+    size_t m_size;
+  };
 
 }
