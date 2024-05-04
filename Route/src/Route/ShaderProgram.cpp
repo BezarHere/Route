@@ -20,11 +20,17 @@ static inline ShaderProgramID compile_program( const Blob<const Shader *> &shade
 static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
   GLuint prog = glCreateProgram();
 
+  if (prog == 0)
+  {
+    Logger::write( format_join( "Failed to create shader program: ", glErrRT( glGetLastError() ) ) );
+    return ShaderProgramID();
+  }
+
   for (size_t i = 0; i < shaders.length; i++)
   {
     GL_CALL_POST(
       glAttachShader( prog, reinterpret_cast<GLuint>(shaders.data[ i ]) ),
-      { Logger::write( format_join( "Attach failed at shader No.", i, ", ID=", shaders.data[ i ] ) ); }
+      { Logger::write( format_join( "Attaching failed for shader No.", i, ", ID=", shaders.data[ i ] ) ); }
     );
   }
 
@@ -32,15 +38,17 @@ static inline ShaderProgramID compile_program( const Blob<ShaderID> &shaders ) {
 
   GLint program_linked;
   glGetProgramiv( prog, GL_LINK_STATUS, &program_linked );
+  
   if (!program_linked)
   {
     GLsizei len = 0;
     GLchar msg[ 1024 ];
     glGetProgramInfoLog( prog, 1024, &len, msg );
-    Logger::write( string( "GL::Program error: " ) + msg, LogLevel::Error );
+    Logger::write( format_join( "Failed to link shader program: ", msg ), LogLevel::Error );
     glDeleteProgram( prog );
     return 0;
   }
+
   return (ShaderID)prog;
 }
 
