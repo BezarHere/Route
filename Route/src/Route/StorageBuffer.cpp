@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "IMap.h"
 #include "Application.h"
-#include "GraphicsResourceFactory.h"
+#include "GraphicsFactory.h"
 
 namespace route
 {

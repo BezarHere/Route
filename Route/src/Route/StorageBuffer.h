@@ -24,7 +24,7 @@ namespace route
 
   class StorageBuffer : public GraphicsResource
   {
-    friend GraphicsResourceFactory;
+    friend GraphicsFactory;
   public:
     StorageBuffer( StorageBuffer && ) noexcept;
     StorageBuffer &operator=( StorageBuffer && ) noexcept;
