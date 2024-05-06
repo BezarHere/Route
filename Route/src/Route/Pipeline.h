@@ -13,9 +13,9 @@ namespace route
     static constexpr size_t MaxShadersLinked = 6;
 
     Pipeline();
-    Pipeline( const Blob<RID> &pShaders );
-    Pipeline( Pipeline && );
-    Pipeline &operator=( Pipeline && );
+    Pipeline(const Blob<Shader *> &pShaders);
+    Pipeline(Pipeline &&);
+    Pipeline &operator=(Pipeline &&);
     ~Pipeline() noexcept;
 
     inline PipelineID get_id() const {
@@ -23,8 +23,8 @@ namespace route
     }
 
   private:
-    Pipeline( const Pipeline & ) = delete;
-    Pipeline &operator=( const Pipeline & ) = delete;
+    Pipeline(const Pipeline &) = delete;
+    Pipeline &operator=(const Pipeline &) = delete;
 
   private:
     PipelineID m_id;
