@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "Shader.h"
 #include "Vertex.h"
+#include "StorageBuffer.h"
 
 namespace route
 {
@@ -128,26 +129,18 @@ namespace route
 			using resource_type = _Ty;
 
 			inline TCommandSSetResource()
-				: Command{ _Type }, rid{ RIDInvalid } {
+				: Command{ _Type }, resource{} {
 			}
 
-			inline TCommandSSetResource( RID p_rid )
-				: Command{ _Type }, rid{ p_rid } {
-			}
-
-			inline resource_type &resource() {
-				return ResourceServer<resource_type>::get_resource( rid );
-			}
-
-			inline const resource_type &resource() const {
-				return ResourceServer<resource_type>::get_resource( rid );
+			inline TCommandSSetResource( resource_ref<_Ty> p_resource)
+				: Command{ _Type }, resource{ p_resource } {
 			}
 
 			inline bool can_invalidate() const {
-				return ResourceServer<resource_type>::get_resource( rid ).change_counter() != change_counter;
+				return ResourceServer<resource_type>::get_resource(resource).change_counter() != change_counter;
 			}
 
-			RID rid;
+			resource_ref<_Ty> resource;
 			// for cache invalidation
 			// if the resource has the same change counter, then it hasn't change
 			refc_t change_counter;
@@ -176,14 +169,13 @@ namespace route
 			inline CommandBindVertexSource() : Command{ CommandType::BindVertexSource } {
 			}
 
-			inline CommandBindVertexSource( RID p_vertex_buffer, RID p_index_buffer, const Blob<const VertexInputState> &p_input_desc )
+			inline CommandBindVertexSource( resource_ref<StorageBuffer> p_vertex_buffer, resource_ref<StorageBuffer> p_index_buffer)
 				: Command{ CommandType::BindVertexSource },
-				vertex_buffer{ p_vertex_buffer }, index_buffer{ p_index_buffer }, input_desc{ p_input_desc } {
+				vertex_buffer{ p_vertex_buffer }, index_buffer{ p_index_buffer } {
 			}
 
-			RID vertex_buffer;
-			RID index_buffer;
-			Blob<const VertexInputState> input_desc;
+			resource_ref<StorageBuffer> vertex_buffer;
+			resource_ref<StorageBuffer> index_buffer;
 		};
 
 
