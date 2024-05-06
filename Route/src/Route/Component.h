@@ -5,6 +5,7 @@
 #include "IMap.h"
 #include "Primitives.h"
 #include "Resource.h"
+#include "StorageBuffer.h"
 
 namespace route
 {
@@ -56,8 +57,8 @@ namespace route
 		
 
 	protected:
-		RID m_vbuf;
-		RID m_ibuf;
+		resource_ref<StorageBuffer> m_vbuf;
+		resource_ref<StorageBuffer> m_ibuf;
 	};
 
 	using Component2D = TSpaceComponent<traits::Impl2D>;
