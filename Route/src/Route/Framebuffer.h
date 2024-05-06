@@ -5,36 +5,36 @@
 
 namespace route
 {
-	typedef vpid_t FrambufferID;
+  typedef vpid_t FrambufferID;
 
-	enum class FramebufferAttachmentType
-	{
-		WriteOnly,
-		ReadWrite,
-	};
+  enum class FramebufferAttachmentType
+  {
+    WriteOnly,
+    ReadWrite,
+  };
 
-	enum class FramebufferAttachmentTarget
-	{
-		Color,
-		Depth,
-		Stencil
-	};
+  enum class FramebufferAttachmentTarget
+  {
+    Color,
+    Depth,
+    Stencil
+  };
 
-	struct FramebufferAttachment
-	{
-		FramebufferAttachmentType type;
-		FramebufferAttachmentTarget target;
-		RID rid;
-	};
+  struct FramebufferAttachment
+  {
+    FramebufferAttachmentType type;
+    FramebufferAttachmentTarget target;
+    //resource_ref<Resource> rid;
+  };
 
-	class Framebuffer : GraphicsResource
-	{
-	public:
+  class Framebuffer : GraphicsResource
+  {
+  public:
 
 
-	private:
-		FrambufferID m_id;
-		vector<FramebufferAttachment> m_attachments;
-	};
+  private:
+    FrambufferID m_id;
+    vector<FramebufferAttachment> m_attachments;
+  };
 
 }
