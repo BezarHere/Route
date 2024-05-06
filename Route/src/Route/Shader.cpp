@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Shader.h"
-#include "GraphicsResourceFactory.h"
+#include "GraphicsFactory.h"
 #include "../pch.h"
 #include "Logger.h"
 
@@ -60,7 +60,7 @@ namespace route
   static const string EmptyStr = "";
 
 
-  Shader::Shader( const char *source, ShaderType type, GraphicsResourceFactory &factory )
+  Shader::Shader( const char *source, ShaderType type, GraphicsFactory &factory )
     : GraphicsResource( factory ), m_source{ source ? source : "" }, m_type{ type } {
     if (!source)
     {
