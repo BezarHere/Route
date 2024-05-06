@@ -6,15 +6,15 @@ namespace _rt
 {
 
 #ifdef GAPI_GL
-  static inline constexpr GLuint to_gl_name( route::vpid_t id ) {
-    return (GLuint)id;
+  static inline constexpr GLuint to_gl_name(route::vpid_t id) {
+    return GLuint(id);
   }
 #endif
 
   struct storage_buffer
   {
 #ifdef GAPI_GL
-    static inline constexpr GLuint to_gl_type( route::StorageBufType type ) {
+    static inline constexpr GLuint to_gl_type(route::StorageBufType type) {
       constexpr std::array<GLuint, (size_t)route::StorageBufType::_Max> types =
       {
         GL_VERTEX_ARRAY,
@@ -28,8 +28,8 @@ namespace _rt
         GL_COPY_WRITE_BUFFER,
         GL_QUERY_BUFFER
       };
-      static_assert(types[ types.size() - 1 ], "Types array has an insufficient number of defined elements");
-      return types[ (size_t)type ];
+      static_assert(types[types.size() - 1], "Types array has an insufficient number of defined elements");
+      return types[(size_t)type];
     }
 
 #endif // GAPI_GL
