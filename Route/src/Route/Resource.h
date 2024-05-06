@@ -1,17 +1,20 @@
 #pragma once
 #include "Bases.h"
 #include "Error.h"
+#include "Ref.h"
 
 
 namespace route
 {
-  using RID = uint64_t;
-  _INLINE_VAR constexpr auto RIDInvalid = RID( -1 );
+  template <typename _Ty, typename _Base = _Ty>
+  struct ResourceDeleter
+  {
+    inline void operator()(_Ty *ptr) const;
+  };
 
-  // base class for data objects handled by their RID
-  // Resources are allocated/deallocated by their ResourceServer<_Ty>
-  // any resource of type 'Ty' lives in the 'ResourceServer<Ty>'
-  // every RID is unique between all resource servers (not just the resource server it belongs to)
+  template <typename _Ty, typename _Base = _Ty>
+  using resource_ref = Ref<_Ty, ResourceDeleter<_Ty, _Base>>;
+
   class Resource
   {
   public:
@@ -27,22 +30,22 @@ namespace route
     refc_t m_change_counter;
   };
 
-  class GraphicsResourceFactory;
+  class GraphicsFactory;
   class Renderer;
-  // resource that are create or handled by a GraphicsResourceFactory
+  // resource that are create or handled by a GraphicsFactory
   class GraphicsResource : public Resource
   {
-    friend GraphicsResourceFactory;
+    friend GraphicsFactory;
     friend Renderer;
   public:
-    using factory = GraphicsResourceFactory;
+    using factory = GraphicsFactory;
 
     inline factory &get_factory() const {
       return m_factory;
     }
 
   protected:
-    inline GraphicsResource( factory &factory ) : m_factory{ factory } {
+    inline GraphicsResource(factory &factory) : m_factory{ factory } {
     }
 
   private:
@@ -54,11 +57,13 @@ namespace route
   {
   public:
 
-    inline virtual Error save( const string &path ) const {
+    inline virtual Error save(const string &path) const {
+      (void)path;
       return Error::NotImplemented;
     }
 
-    inline virtual Error load( const string &path ) {
+    inline virtual Error load(const string &path) {
+      (void)path;
       return Error::NotImplemented;
     }
 
