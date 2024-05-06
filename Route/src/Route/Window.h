@@ -43,6 +43,8 @@ namespace route
 
 	private:
 
+		void _initialize();
+
 	private:
 		WindowHandle m_handle;
 		bool m_should_close;

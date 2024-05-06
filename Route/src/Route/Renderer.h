@@ -2,8 +2,7 @@
 #include "Scene.h"
 #include "Window.h"
 #include "RenderCommandQueue.h"
-#include "GraphicsResourceFactory.h"
-#include "ShaderProgram.h"
+#include "GraphicsFactory.h"
 
 
 namespace route
@@ -24,7 +23,7 @@ namespace route
   struct RendererState
   {
     array<StorageBufferID, (int)StorageBufType::_Max> Buffers{};
-    ShaderProgramID ShaderProg{};
+    PipelineID Pipeline{};
   };
 
   typedef uint64_t RendererLock;
@@ -33,6 +32,7 @@ namespace route
   class Renderer
   {
     friend GphxResFac;
+    friend Application;
   public:
     Renderer( Window &window );
     ~Renderer();
@@ -48,19 +48,26 @@ namespace route
     }
 
     void set_buffer( const StorageBuffer &buffer );
-    void set_shader_program( const ShaderProgram &shader );
+    void set_pipeline( const Pipeline &shader );
 
-    inline StorageBufferID get_bound_buffer( StorageBufType type ) const {
+    inline StorageBufferID get_buffer( StorageBufType type ) const {
       return m_state.Buffers[ static_cast<size_t>(type) ];
     }
 
-    inline ShaderProgramID get_bound_shader_prog() const {
-      return m_state.ShaderProg;
+    inline PipelineID get_pipeline() const {
+      return m_state.Pipeline;
     }
+
+    /// @brief gets weather the renderer is locked, the renderer should lock when it's not active
+    /// @brief only unlocked renderers can manipulate GPU resource.
+    /// @returns weather the renderer is locked
+    bool is_locked() const;
 
   private:
     Renderer( const Renderer & ) = delete;
     Renderer &operator =( const Renderer & ) = delete;
+
+    void _initialize();
 
     void _bind_buffer( StorageBufType type) const;
     void _bind_shader_program() const;

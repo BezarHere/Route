@@ -37,6 +37,7 @@ namespace route
 	Application::Application( Window &window, Renderer &renderer )
 		: m_window{ window }, m_renderer{ renderer }, m_threading{ nullptr }, m_cache{ new cache() } {
 		_toggle_resource_servers( true );
+		_initialize();
 	}
 
 	Application::~Application() {
@@ -112,6 +113,8 @@ namespace route
 		}
 	}
 
-
+	void Application::_initialize() {
+		m_renderer._initialize();
+	}
 
 }

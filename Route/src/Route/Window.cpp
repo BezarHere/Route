@@ -86,4 +86,7 @@ namespace route
 		}
 
 	}
+
+	void Window::_initialize() {
+	}
 }

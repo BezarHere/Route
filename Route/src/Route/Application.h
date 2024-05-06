@@ -62,6 +62,8 @@ namespace route
 		*/
 		static void _toggle_resource_servers( uint32_t flags );
 
+		void _initialize();
+
 		Application( const Application & ) = delete;
 		Application &operator=( const Application & ) = delete;
 
