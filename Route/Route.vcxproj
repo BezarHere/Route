@@ -147,6 +147,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -253,10 +255,15 @@
     <ClInclude Include="src\Route\Bases.h" />
     <ClInclude Include="src\Route\Error.h" />
     <ClInclude Include="src\Route\Framebuffer.h" />
+    <ClInclude Include="src\Route\GraphicsProfile.h" />
+    <ClInclude Include="src\Route\internal\storage_buffer.h" />
     <ClInclude Include="src\Route\Memblock.h" />
+    <ClInclude Include="src\Route\HeapPool.h" />
+    <ClInclude Include="src\Route\Ref.h" />
     <ClInclude Include="src\Route\RenderCommandQueue.h" />
     <ClInclude Include="src\Route\ShaderFactory.h" />
-    <ClInclude Include="src\Route\VertexInputDesc.h" />
+    <ClInclude Include="src\Route\Pipeline.h" />
+    <ClInclude Include="src\Route\VertexInputState.h" />
     <ClInclude Include="src\Route\Performance.h" />
     <ClInclude Include="src\Route\StorageBuffer.h" />
     <ClInclude Include="src\Route\Chunklist.h" />
@@ -268,7 +275,7 @@
     <ClInclude Include="src\Route\Logger.h" />
     <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
-    <ClInclude Include="src\Route\GraphicsResourceFactory.h" />
+    <ClInclude Include="src\Route\GraphicsFactory.h" />
     <ClInclude Include="src\Route\Resource.h" />
     <ClInclude Include="src\Route\ResourceServer.h" />
     <ClInclude Include="src\Route\Scene.h" />
@@ -296,9 +303,11 @@
     </ClCompile>
     <ClCompile Include="src\Route.cpp" />
     <ClCompile Include="src\Route\Framebuffer.cpp" />
-    <ClCompile Include="src\Route\GraphicsResourceFactory.cpp" />
+    <ClCompile Include="src\Route\GraphicsProfile.cpp" />
+    <ClCompile Include="src\Route\GraphicsFactory.cpp" />
     <ClCompile Include="src\Route\Performance.cpp" />
     <ClCompile Include="src\Route\Shader.cpp" />
+    <ClCompile Include="src\Route\Pipeline.cpp" />
     <ClCompile Include="src\Route\StorageBuffer.cpp" />
     <ClCompile Include="src\Route\Component.cpp" />
     <ClCompile Include="src\Route\Application.cpp" />
@@ -308,7 +317,7 @@
     <ClCompile Include="src\Route\Renderer.cpp" />
     <ClCompile Include="src\Route\ResourceServer.cpp" />
     <ClCompile Include="src\Route\Texture.cpp" />
-    <ClCompile Include="src\Route\Vertex.cpp" />
+    <ClCompile Include="src\Route\VertexInputState.cpp" />
     <ClCompile Include="src\Route\Window.cpp" />
     <ClCompile Include="src\_opengl.cpp" />
   </ItemGroup>

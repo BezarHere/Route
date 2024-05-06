@@ -348,7 +348,7 @@
     <ClInclude Include="src\Route\ArrayView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\GraphicsResourceFactory.h">
+    <ClInclude Include="src\Route\GraphicsFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\StorageBuffer.h">
@@ -369,7 +369,7 @@
     <ClInclude Include="src\Route\Performance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\VertexInputDesc.h">
+    <ClInclude Include="src\Route\VertexInputState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\ShaderFactory.h">
@@ -382,6 +382,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\Error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\internal\storage_buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\GraphicsProfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\HeapPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\Ref.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -422,7 +437,7 @@
     <ClCompile Include="src\Route\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Route\Vertex.cpp">
+    <ClCompile Include="src\Route\VertexInputState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\StorageBuffer.cpp">
@@ -431,13 +446,19 @@
     <ClCompile Include="src\Route\Performance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Route\GraphicsResourceFactory.cpp">
+    <ClCompile Include="src\Route\GraphicsFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\Framebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Route\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Route\GraphicsProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
