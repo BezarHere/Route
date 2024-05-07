@@ -6,13 +6,18 @@
 namespace route
 {
   class Application;
-  class GraphicsFactory;
+  class GraphicsDevice;
+
+  /* MIGHT REMOVE THE RESOURCE SERVER IN THE FUTURE:
+  *   the resource server's design is to encapsulate resource to manage their memory
+  *   but with the addition of the Refs, having a central class manager seems more obsolete
+  */
 
   template <typename _Ty>
   class ResourceServer
   {
     friend Application;
-    friend GraphicsFactory;
+    friend GraphicsDevice;
 
     template <typename _Ty, typename _Base>
     friend struct ResourceDeleter;
