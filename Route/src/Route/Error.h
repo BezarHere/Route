@@ -14,6 +14,8 @@ namespace route
     Full,
     NotFull,
 
+    EndOfFile,
+
     OutOfRange,
 
     InvalidValue,
@@ -23,6 +25,8 @@ namespace route
     InvalidRange,
     InvalidKey,
     InvalidFlags,
+    InvalidHandle,
+    InvalidID,
 
     InvalidOperation,
     IllegalOperation,
@@ -35,6 +39,7 @@ namespace route
 
     MemoryError,
     OutOfMemory,
+    NoAllocator,
 
     Invalid,
     Illegal,
@@ -79,6 +84,7 @@ namespace route
 
     TypeMismatch,
     IllegalType,
+    UnknownType,
 
     CurrentlyInactive,
     CurrentlyDisabled,
@@ -119,11 +125,16 @@ namespace route
     Aborted,
     Refused,
 
+    ConnectionExpired,
     ConnectionCanceled,
     ConnectionAborted,
     ConnectionRefused,
+
     AlreadyConnected,
     AlreadyConnecting,
+
+    DataEncrypted,
+    BufferEncrypted,
 
     HostUnreachable,
 
@@ -138,8 +149,17 @@ namespace route
     ServiceUnavailable,
     ServiceLocked,
     ServiceNotInitialized,
+    ServiceDisabled,
+    ServiceInactive,
 
     ObjectIncomplete,
+
+    DeviceUnavailable,
+    DeviceInactive,
+    DeviceInactive,
+
+    DeadPointer,
+    DeadData,
 
     JustCryAboutIt,
 
@@ -149,8 +169,8 @@ namespace route
 
 namespace std
 {
-  inline ostream &operator<<( ostream &stream, const route::Error err ) {
-    constexpr ostream::char_type NamesTable[][ 24 ] = {
+  inline ostream &operator<<(ostream &stream, const route::Error err) {
+    constexpr ostream::char_type NamesTable[][24] = {
       { "Ok" },
       { "Fault" },
       { "Busy" },
@@ -158,6 +178,7 @@ namespace std
       { "NotEmpty" },
       { "Full" },
       { "NotFull" },
+      { "EndOfFile" },
       { "OutOfRange" },
       { "InvalidValue" },
       { "InvalidEnum" },
@@ -166,6 +187,8 @@ namespace std
       { "InvalidRange" },
       { "InvalidKey" },
       { "InvalidFlags" },
+      { "InvalidHandle" },
+      { "InvalidID" },
       { "InvalidOperation" },
       { "IllegalOperation" },
       { "OperationIncomplete" },
@@ -175,6 +198,7 @@ namespace std
       { "StackUnderflow" },
       { "MemoryError" },
       { "OutOfMemory" },
+      { "NoAllocator" },
       { "Invalid" },
       { "Illegal" },
       { "TooBig" },
@@ -205,6 +229,7 @@ namespace std
       { "DataInsufficient" },
       { "TypeMismatch" },
       { "IllegalType" },
+      { "UnknownType" },
       { "CurrentlyInactive" },
       { "CurrentlyDisabled" },
       { "RequiresCacheRebuild" },
@@ -234,11 +259,14 @@ namespace std
       { "Canceled" },
       { "Aborted" },
       { "Refused" },
+      { "ConnectionExpired" },
       { "ConnectionCanceled" },
       { "ConnectionAborted" },
       { "ConnectionRefused" },
       { "AlreadyConnected" },
       { "AlreadyConnecting" },
+      { "DataEncrypted" },
+      { "BufferEncrypted" },
       { "HostUnreachable" },
       { "NotAvailable" },
       { "AlreadyAvailable" },
@@ -248,11 +276,18 @@ namespace std
       { "ServiceUnavailable" },
       { "ServiceLocked" },
       { "ServiceNotInitialized" },
+      { "ServiceDisabled" },
+      { "ServiceInactive" },
       { "ObjectIncomplete" },
+      { "DeviceUnavailable" },
+      { "DeviceInactive" },
+      { "DeviceInactive" },
+      { "DeadPointer" },
+      { "DeadData" },
       { "JustCryAboutIt" },
       { "UNKNOWN" }
     };
-    return stream << NamesTable[ static_cast<size_t>(err) ];
+    return stream << NamesTable[static_cast<size_t>(err)];
   }
 
   // sadly, it doesn't work :[
