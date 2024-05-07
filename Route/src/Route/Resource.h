@@ -30,26 +30,26 @@ namespace route
     refc_t m_change_counter;
   };
 
-  class GraphicsFactory;
+  class GraphicsDevice;
   class Renderer;
-  // resource that are create or handled by a GraphicsFactory
+  // resource that are create or handled by a GraphicsDevice
   class GraphicsResource : public Resource
   {
-    friend GraphicsFactory;
+    friend GraphicsDevice;
     friend Renderer;
   public:
-    using factory = GraphicsFactory;
+    using device = GraphicsDevice;
 
-    inline factory &get_factory() const {
-      return m_factory;
+    inline device &get_device() const {
+      return m_device;
     }
 
   protected:
-    inline GraphicsResource(factory &factory) : m_factory{ factory } {
+    inline GraphicsResource(device &device) : m_device{ device } {
     }
 
   private:
-    factory &m_factory;
+    device &m_device;
   };
 
   // base class for all resources that can be load/saved to a file in the disk
