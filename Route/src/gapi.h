@@ -16,13 +16,13 @@
 #endif
 
 #ifdef GAPI_GL_ONLY
-#define GAPI_IF_GL(expr) if constexpr (true) // no need to check, we only have opengl
+#define GAPI_IF_GL(expr) // no need to check, we only have opengl
 #elif defined(GAPI_GL)
 #define GAPI_IF_GL(expr) if (expr) // do check, we can be using vulkan
 #endif
 
 #ifdef GAPI_VK_ONLY
-#define GAPI_IF_VK(expr) if constexpr (true) // no need to check, we only have vulkan
+#define GAPI_IF_VK(expr) // no need to check, we only have vulkan
 #elif defined(GAPI_VK)
 #define GAPI_IF_VK(expr) if (expr) // do check, we can be using opengl
 #endif
