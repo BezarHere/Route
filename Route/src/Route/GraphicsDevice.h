@@ -1,31 +1,41 @@
 #pragma once
 #include "ResourceServer.h"
+#include "Renderer.h"
 #include "StorageBuffer.h"
 #include "Texture.h"
 #include "Pipeline.h"
 
 namespace route
 {
-  using DeviceID = int64_t;
-  typedef class GraphicsFactory GphxResFac;
+  using GraphicsDeviceID = vpid_t;
 
   class Renderer;
 
-  class GraphicsFactory
+  class GraphicsDevice
   {
     friend Renderer;
   public:
+    enum GraphicsDeviceFlags
+    {
+      eFlag_None = 0x0000,
+      eFlag_Active = 0x0001,
+    };
+
+    GraphicsDevice(Window &window);
+
     resource_ref<StorageBuffer> create_buffer(StorageBufType type, size_t size, int8_t *data = nullptr);
     resource_ref<Texture> create_texture(const TextureInfo &info);
     resource_ref<Shader> create_shader(const char *source, ShaderType type);
 
-    inline Error error() const {
-      return m_error;
+    inline bool is_active() const {
+      return flags & GraphicsDeviceFlags::eFlag_Active;
     }
 
-    bool is_locked() const;
+    inline Renderer &get_renderer() {
+      return m_renderer;
+    }
 
-    inline Renderer &get_renderer() const {
+    inline const Renderer &get_renderer() const {
       return m_renderer;
     }
 
@@ -48,7 +58,6 @@ namespace route
       vector<ShaderProgQueueEntry> shader_programs;
     };
 
-    GraphicsFactory(Renderer &renderer);
     void _free_buffer(const StorageBufQueueEntry &entry);
     void _free_texture(const TextureQueueEntry &entry);
     void _free_shader(const ShaderQueueEntry &entry);
@@ -64,9 +73,11 @@ namespace route
     }
 
   private:
-    Renderer &m_renderer;
-    DeviceID m_device;
-    Error m_error;
+    GraphicsDeviceID m_id;
+    Window &m_window;
+    Renderer m_renderer;
+
+    GraphicsDeviceFlags flags;
     DestroyQueueCollection m_destroy_queues;
   };
 
