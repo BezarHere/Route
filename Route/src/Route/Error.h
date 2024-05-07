@@ -156,7 +156,6 @@ namespace route
 
     DeviceUnavailable,
     DeviceInactive,
-    DeviceInactive,
 
     DeadPointer,
     DeadData,
@@ -280,7 +279,6 @@ namespace std
       { "ServiceInactive" },
       { "ObjectIncomplete" },
       { "DeviceUnavailable" },
-      { "DeviceInactive" },
       { "DeviceInactive" },
       { "DeadPointer" },
       { "DeadData" },
