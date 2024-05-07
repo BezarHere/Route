@@ -2,6 +2,7 @@
 #include "GraphicsDevice.h"
 #include "../pch.h"
 #include "GraphicsProfile.h"
+#include "Logger.h"
 #include "Renderer.h"
 #include "../gapi.h"
 #include "internal/storage_buffer.h"
@@ -29,9 +30,8 @@ namespace route
 {
   GraphicsDevice::GraphicsDevice(Window &window)
     : m_id{ get_best_device(window.get_handle()) },
-    m_window{ window }, m_destroy_queues{},
-    m_renderer{ *this } {
-
+    m_window{ window }, m_renderer{ *this },
+    m_destroy_queues{} {
   }
 
   resource_ref<StorageBuffer> GraphicsDevice::create_buffer(StorageBufType type, size_t size, int8_t *data) {
@@ -58,6 +58,18 @@ namespace route
     return {};
   }
 
+
+  Error GraphicsDevice::update_buffer(StorageBuffer &buffer, uint8_t *data, size_t length, size_t offset) const {
+    if (!is_active())
+      return Error::DeviceInactive;
+
+#ifdef GAPI_GL
+    GAPI_IF_GL(Application::graphics_api() == GraphicsAPI::OpenGL) {
+      GL_CALL_POST(glBufferSubData(_rt::storage_buffer::to_gl_type(buffer.m_type), offset, length, data), return glErrRT(err));
+      return Error::Ok;
+    }
+#endif // GAPI_GL
+  }
 
   void GraphicsDevice::_queue_free_buffer(const StorageBuffer &buffer) {
     if (!is_active())
@@ -131,7 +143,7 @@ namespace route
 #endif // GAPI_GL
   }
 
-  void GraphicsDevice::_unlocked() {
+  void GraphicsDevice::_process_destroy_queues() {
     while (!m_destroy_queues.buffers.empty())
     {
       _free_buffer(m_destroy_queues.buffers.back());
@@ -155,6 +167,18 @@ namespace route
       _free_shader_program(m_destroy_queues.shader_programs.back());
       m_destroy_queues.shader_programs.pop_back();
     }
+  }
+
+  void GraphicsDevice::_begin() {
+    m_flags = eFlag_Active;
+
+    _process_destroy_queues();
+  }
+
+  void GraphicsDevice::_end() {
+
+
+    m_flags = eFlag_None;
   }
 
 }

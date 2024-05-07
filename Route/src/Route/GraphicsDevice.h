@@ -28,7 +28,7 @@ namespace route
     resource_ref<Shader> create_shader(const char *source, ShaderType type);
 
     inline bool is_active() const {
-      return flags & GraphicsDeviceFlags::eFlag_Active;
+      return m_flags & GraphicsDeviceFlags::eFlag_Active;
     }
 
     inline Renderer &get_renderer() {
@@ -38,6 +38,8 @@ namespace route
     inline const Renderer &get_renderer() const {
       return m_renderer;
     }
+
+    Error update_buffer(StorageBuffer &buffer, uint8_t *data, size_t length, size_t offset) const;
 
     void _queue_free_buffer(const StorageBuffer &buffer);
     void _queue_free_texture(const Texture &texture);
@@ -58,12 +60,15 @@ namespace route
       vector<ShaderProgQueueEntry> shader_programs;
     };
 
+    void _begin();
+    void _end();
+
     void _free_buffer(const StorageBufQueueEntry &entry);
     void _free_texture(const TextureQueueEntry &entry);
     void _free_shader(const ShaderQueueEntry &entry);
     void _free_shader_program(const ShaderProgQueueEntry &entry);
 
-    void _unlocked();
+    void _process_destroy_queues();
 
     template <typename _Ty, typename _Ey, typename... _Args>
     inline resource_ref<_Ty> _create_resource(_Args &&...args) const {
@@ -77,7 +82,7 @@ namespace route
     Window &m_window;
     Renderer m_renderer;
 
-    GraphicsDeviceFlags flags;
+    GraphicsDeviceFlags m_flags;
     DestroyQueueCollection m_destroy_queues;
   };
 
