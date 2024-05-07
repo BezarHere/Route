@@ -2,13 +2,26 @@
 #include "../pch.h"
 #include "Logger.h"
 #include "Renderer.h"
+#include "GraphicsDevice.h"
 #include "StorageBuffer.h"
 #include "Application.h"
+#include "GraphicsProfile.h"
 
 #include "internal/storage_buffer.h"
+#include "Pipeline.h"
 
 namespace route
 {
+  struct PrimitivesData
+  {
+    resource_ref<StorageBuffer> rect_buffer;
+    array<CommandInstance, 3> rect_commands = {
+      CommandInstance(rcq::CmdType::SetPrimitiveTopology, PrimitiveTopology::TriangleStrips),
+      CommandInstance(rcq::CmdType::BindVertices, rect_buffer),
+      CommandInstance(rcq::CmdType::Draw)
+    };
+  };
+
   class Renderer::APIState
   {
   public:
@@ -22,11 +35,13 @@ namespace route
         "in vec3 clr; layout (location = 0) out vec4 Color;"
         "void main() { Color = vec4(clr, 1.0); }"
         ;
-      resource_ref<Shader> vertex_shader_res = renderer.get_factory().create_shader(vertex_shader, ShaderType::Vertex);
-      resource_ref<Shader> fragment_shader_res = renderer.get_factory().create_shader(frag_shader, ShaderType::Fragment);
+      resource_ref<Shader> vertex_shader_res = renderer.get_device().create_shader(vertex_shader, ShaderType::Vertex);
+      resource_ref<Shader> fragment_shader_res = renderer.get_device().create_shader(frag_shader, ShaderType::Fragment);
 
       pipeline = Pipeline({ vertex_shader_res.get(), fragment_shader_res.get() });
 
+      primitive_data.rect_buffer = renderer.get_device().create_buffer(StorageBufType::Vertex, sizeof(Vrtx8C2) * 4);
+      primitive_data.rect_buffer->update()
     }
 
     ~APIState() {
@@ -35,11 +50,18 @@ namespace route
     Renderer &renderer;
     Pipeline pipeline;
     Vec2u last_window_size;
+    PrimitivesData primitive_data = {};
+#if GAPI_VK
+    vkCommandBuffer cmd_buffer;
+#endif // GAPI_VK
+
   };
 
   Renderer::Renderer(Window &window)
-    : m_window{ window }, m_factory{ *this } {
+    : m_window{ window }, m_device{ *this }, m_commands{} {
     // TODO: start OpenGL
+    m_commands.reserve(DefaultCmdBufCapacity);
+
     m_context = OpenGL::create_context(static_cast<LPSDLWindow>(m_window.m_handle));
     if (!m_context)
     {
@@ -77,7 +99,7 @@ namespace route
       glViewport(-32, -32, wnd_sz.x, wnd_sz.y);
 
     m_api_state->last_window_size = wnd_sz;
-    m_factory._unlocked();
+    m_device._unlocked();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -156,33 +178,42 @@ namespace route
 #endif // GAPI_GL
   }
 
-#ifdef GAPI_GL
-  void Renderer::_do_command_gl(const RenderCommandQueue::command_boxed &command) {
-    using rcq::CommandType;
-    switch (command->type)
+  void Renderer::_process_cmds() {
+    for (size_t i = 0; i < m_commands.size(); i++)
     {
-    case CommandType::BindVertexSource:
+      _do_command(m_commands[i]);
+    }
+  }
+
+  void Renderer::_do_command(const CommandInstance &command) {
+    using rcq::CmdType;
+    switch (command.get<rcq::Cmd>().get_type())
+    {
+    case CmdType::BindVertices:
       {
-        const auto &c = command.get<rcq::CommandBindVertexSource>();
-        const auto &vertex_buf = c.vertex_buffer;
+        const auto &cmd = command.get<rcq::CmdBindVertices>();
+        const auto &vertex_buf = cmd.vertex_buffer;
         RT_ASSERT_RELEASE(vertex_buf->get_type() == StorageBufType::Vertex);
+        set_buffer(*vertex_buf);
+        _bind_buffer(StorageBufType::Vertex);
+        return;
+      }
+    case CmdType::Draw:
+      {
+        const auto &cmd = command.get<rcq::CmdDraw>();
+#ifdef GAPI_GL
+        GAPI_IF_GL(GraphicsProfile::graphics_api() == GraphicsAPI::OpenGL) {
+          glDrawArrays(_rt::to_gl_primitive(m_state.topology), cmd.offset, cmd.count);
+          return;
+        }
+#endif // GAPI_GL
+
+
+        return;
       }
     default:
       break;
     }
   }
-#endif
 
-#ifdef GAPI_VK
-  void Renderer::_do_command_vk(const RenderCommandQueue::command_boxed &command) {
-    using rcq::CommandType;
-    switch (command->get_type)
-    {
-    case CommandType::BindVertexSource:
-    default:
-      break;
-    }
-      }
-#endif
-
-    }
+}
