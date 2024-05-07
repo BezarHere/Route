@@ -15,7 +15,7 @@ namespace route
 	class Shader : public GraphicsResource
 	{
 		friend Renderer;
-		friend GraphicsFactory;
+		friend GraphicsDevice;
 	public:
 		Shader( Shader &&move ) noexcept;
 
@@ -49,7 +49,7 @@ namespace route
 			return m_source;
 		}
 	private:
-		Shader( const char *source, ShaderType type, GraphicsFactory &factory );
+		Shader( const char *source, ShaderType type, GraphicsDevice &factory );
 
 	private:
 		ShaderType m_type;

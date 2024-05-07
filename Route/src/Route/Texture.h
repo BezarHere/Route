@@ -46,7 +46,7 @@ namespace route
 	class Texture : public GraphicsResource
 	{
 	public:
-		inline Texture(GraphicsFactory &factory) : GraphicsResource(factory) {
+		inline Texture(GraphicsDevice &factory) : GraphicsResource(factory) {
 		}
 		Texture( const Texture & );
 

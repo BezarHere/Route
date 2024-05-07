@@ -24,7 +24,7 @@ namespace route
 
   class StorageBuffer : public GraphicsResource
   {
-    friend GraphicsFactory;
+    friend GraphicsDevice;
   public:
     StorageBuffer( StorageBuffer && ) noexcept;
     StorageBuffer &operator=( StorageBuffer && ) noexcept;
@@ -42,11 +42,13 @@ namespace route
       return m_size;
     }
 
-    Error update( uint8_t *data, size_t length, size_t offset = 0U );
+    inline Error update( uint8_t *data, size_t length, size_t offset = 0U ) {
+      return get_device().update_buffer(*this, data, length, offset);
+    }
 
   private:
     // can lead to segfaults if not used carefully
-    StorageBuffer( StorageBufferID id, StorageBufType type, size_t size, factory &factory );
+    StorageBuffer( StorageBufferID id, StorageBufType type, size_t size, device &device);
 
   private:
     StorageBufferID m_id;

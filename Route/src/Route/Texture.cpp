@@ -4,7 +4,7 @@
 namespace route
 {
 
-	Texture::Texture(const Texture &copy) : GraphicsResource{copy.get_factory()} {
+	Texture::Texture(const Texture &copy) : GraphicsResource{copy.get_device()} {
 	}
 
 }

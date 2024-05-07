@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Shader.h"
-#include "GraphicsFactory.h"
+#include "GraphicsDevice.h"
 #include "../pch.h"
 #include "Logger.h"
 
@@ -60,7 +60,7 @@ namespace route
   static const string EmptyStr = "";
 
 
-  Shader::Shader( const char *source, ShaderType type, GraphicsFactory &factory )
+  Shader::Shader( const char *source, ShaderType type, GraphicsDevice &factory )
     : GraphicsResource( factory ), m_source{ source ? source : "" }, m_type{ type } {
     if (!source)
     {
@@ -73,21 +73,21 @@ namespace route
   }
 
   Shader::Shader( Shader &&move ) noexcept
-    : GraphicsResource( move.get_factory() ), m_id{ move.m_id }, m_type{ move.m_type }, m_source{ move.m_source } {
+    : GraphicsResource( move.get_device() ), m_id{ move.m_id }, m_type{ move.m_type }, m_source{ move.m_source } {
     move.m_id = NULL;
   }
 
   Shader::~Shader() noexcept {
-    get_factory()._queue_free_shader( *this );
+    get_device()._queue_free_shader( *this );
   }
 
   Shader &Shader::operator=( Shader &&move ) noexcept {
-    if (&move.get_factory() != &get_factory())
+    if (&move.get_device() != &get_device())
     {
       std::_Xruntime_error( "Can't assign two shaders from different factories" );
     }
 
-    get_factory()._queue_free_shader( *this );
+    get_device()._queue_free_shader( *this );
     m_id = move.m_id;
     m_type = move.m_type;
     m_source = move.m_source;
