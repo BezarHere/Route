@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Bases.h"
 
 namespace route
 {
@@ -8,7 +8,7 @@ namespace route
   enum class GraphicsAPI
   {
     OpenGL,
-    //Vulkan,
+    Vulkan,
   };
 
   class GraphicsProfile
@@ -18,6 +18,16 @@ namespace route
     // default to opengl
     static inline GraphicsAPI graphics_api() {
       return s_graphics_api;
+    }
+
+    // are we on opengl
+    static FORCE_INLINE bool opengl() {
+      return s_graphics_api == GraphicsAPI::OpenGL;
+    }
+
+    // are we on vulkan
+    static FORCE_INLINE bool vulkan() {
+      return s_graphics_api == GraphicsAPI::Vulkan;
     }
 
   private:
