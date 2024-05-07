@@ -97,6 +97,7 @@ namespace route
 
       // this object is now taking the old object's place
       move._delink();
+      return *this;
     }
 
     inline void swap(this_type &other) {
