@@ -1,0 +1,15 @@
+# project path, or '..' to make it the current dir the file resides in
+project "..\.."
+
+# source path, where the headers should be, '__proj__' is replaced by the project path.
+# the source path replaces every '__src__' in the other paths
+source "__proj__\Route\src"
+
+# ouput path, where the headers should go, '__proj__' is replaced by the project path
+# the output path replaces every '__out__' in the other paths
+output "__proj__"
+
+# headers with their path matching the given REGEX EXP (note that it does not use glob) are ignored.
+# just "pch.h" will ignore every file named "pch.h" or has "pch.h" in it's filepath
+whitelist Route[/\\]\w+.h
+
