@@ -348,7 +348,7 @@
     <ClInclude Include="src\Route\ArrayView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\GraphicsFactory.h">
+    <ClInclude Include="src\Route\GraphicsDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\StorageBuffer.h">
@@ -369,13 +369,13 @@
     <ClInclude Include="src\Route\Performance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\VertexInputState.h">
+    <ClInclude Include="src\Route\VertexInputInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\ShaderFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\RenderCommandQueue.h">
+    <ClInclude Include="src\Route\RenderCommands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\Framebuffer.h">
@@ -384,7 +384,7 @@
     <ClInclude Include="src\Route\Error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\internal\storage_buffer.h">
+    <ClInclude Include="src\Route\internal\gl_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\Pipeline.h">
@@ -397,6 +397,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Route\Ref.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\Viewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\Range.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\Enums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\StaticSpan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\internal\pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Route\AppendInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -437,7 +455,7 @@
     <ClCompile Include="src\Route\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Route\VertexInputState.cpp">
+    <ClCompile Include="src\Route\VertexInputInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\StorageBuffer.cpp">
@@ -446,7 +464,7 @@
     <ClCompile Include="src\Route\Performance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Route\GraphicsFactory.cpp">
+    <ClCompile Include="src\Route\GraphicsDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\Shader.cpp">
@@ -459,6 +477,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\GraphicsProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Route\RenderCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

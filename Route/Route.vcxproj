@@ -252,18 +252,23 @@
     <ClInclude Include="src\gapi.h" />
     <ClInclude Include="src\Route.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\Route\AppendInterface.h" />
     <ClInclude Include="src\Route\Bases.h" />
+    <ClInclude Include="src\Route\Enums.h" />
     <ClInclude Include="src\Route\Error.h" />
     <ClInclude Include="src\Route\Framebuffer.h" />
     <ClInclude Include="src\Route\GraphicsProfile.h" />
-    <ClInclude Include="src\Route\internal\storage_buffer.h" />
+    <ClInclude Include="src\Route\internal\gl_utils.h" />
+    <ClInclude Include="src\Route\internal\pipeline.h" />
     <ClInclude Include="src\Route\Memblock.h" />
     <ClInclude Include="src\Route\HeapPool.h" />
+    <ClInclude Include="src\Route\Range.h" />
     <ClInclude Include="src\Route\Ref.h" />
-    <ClInclude Include="src\Route\RenderCommandQueue.h" />
+    <ClInclude Include="src\Route\RenderCommands.h" />
     <ClInclude Include="src\Route\ShaderFactory.h" />
     <ClInclude Include="src\Route\Pipeline.h" />
-    <ClInclude Include="src\Route\VertexInputState.h" />
+    <ClInclude Include="src\Route\StaticSpan.h" />
+    <ClInclude Include="src\Route\VertexInputInfo.h" />
     <ClInclude Include="src\Route\Performance.h" />
     <ClInclude Include="src\Route\StorageBuffer.h" />
     <ClInclude Include="src\Route\Chunklist.h" />
@@ -275,7 +280,7 @@
     <ClInclude Include="src\Route\Logger.h" />
     <ClInclude Include="src\Route\Material.h" />
     <ClInclude Include="src\Route\Named.h" />
-    <ClInclude Include="src\Route\GraphicsFactory.h" />
+    <ClInclude Include="src\Route\GraphicsDevice.h" />
     <ClInclude Include="src\Route\Resource.h" />
     <ClInclude Include="src\Route\ResourceServer.h" />
     <ClInclude Include="src\Route\Scene.h" />
@@ -291,6 +296,7 @@
     <ClInclude Include="src\Route\Transform.h" />
     <ClInclude Include="src\Route\Vector.h" />
     <ClInclude Include="src\Route\Vertex.h" />
+    <ClInclude Include="src\Route\Viewport.h" />
     <ClInclude Include="src\Route\Window.h" />
     <ClInclude Include="src\_opengl.h" />
   </ItemGroup>
@@ -304,8 +310,9 @@
     <ClCompile Include="src\Route.cpp" />
     <ClCompile Include="src\Route\Framebuffer.cpp" />
     <ClCompile Include="src\Route\GraphicsProfile.cpp" />
-    <ClCompile Include="src\Route\GraphicsFactory.cpp" />
+    <ClCompile Include="src\Route\GraphicsDevice.cpp" />
     <ClCompile Include="src\Route\Performance.cpp" />
+    <ClCompile Include="src\Route\RenderCommands.cpp" />
     <ClCompile Include="src\Route\Shader.cpp" />
     <ClCompile Include="src\Route\Pipeline.cpp" />
     <ClCompile Include="src\Route\StorageBuffer.cpp" />
@@ -317,7 +324,7 @@
     <ClCompile Include="src\Route\Renderer.cpp" />
     <ClCompile Include="src\Route\ResourceServer.cpp" />
     <ClCompile Include="src\Route\Texture.cpp" />
-    <ClCompile Include="src\Route\VertexInputState.cpp" />
+    <ClCompile Include="src\Route\VertexInputInfo.cpp" />
     <ClCompile Include="src\Route\Window.cpp" />
     <ClCompile Include="src\_opengl.cpp" />
   </ItemGroup>
