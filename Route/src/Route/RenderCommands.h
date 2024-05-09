@@ -24,8 +24,8 @@ namespace route
       DrawPrimitive2D,
       DrawPrimitive3D,
 
-      BindVertices,
-      BindIndices,
+      BindVertexBuffer,
+      BindIndexBuffer,
 
       SetViewport,
       SetPrimitiveTopology,
@@ -85,12 +85,7 @@ namespace route
     struct TCmdSSetResource : public Cmd
     {
       using resource_type = _Ty;
-
-      inline TCmdSSetResource()
-        : Cmd{ _Type }, resource{} {
-      }
-
-      inline TCmdSSetResource(resource_ref<_Ty> p_resource)
+      inline TCmdSSetResource(resource<_Ty> p_resource)
         : Cmd{ _Type }, resource{ p_resource } {
       }
 
@@ -98,7 +93,7 @@ namespace route
         return ResourceServer<resource_type>::get_resource(resource).change_counter() != change_counter;
       }
 
-      resource_ref<_Ty> resource;
+      resource<_Ty> resource;
       // for cache invalidation
       // if the resource has the same change counter, then it hasn't change
       refc_t change_counter;
@@ -156,30 +151,30 @@ namespace route
       uint32_t offset;
     };
 
-    struct CmdBindVertices : public Cmd
+    struct CmdBindVertexBuffer : public Cmd
     {
-      inline CmdBindVertices() : Cmd{ CmdType::BindVertices } {
+      inline CmdBindVertexBuffer() : Cmd{ CmdType::BindVertexBuffer } {
       }
 
-      inline CmdBindVertices(resource_ref<StorageBuffer> p_vertex_buffer)
-        : Cmd{ CmdType::BindVertices },
+      inline CmdBindVertexBuffer(resource<StorageBuffer> p_vertex_buffer)
+        : Cmd{ CmdType::BindVertexBuffer },
         vertex_buffer{ p_vertex_buffer } {
       }
 
-      resource_ref<StorageBuffer> vertex_buffer;
+      resource<StorageBuffer> vertex_buffer;
     };
 
-    struct CmdBindIndices : public Cmd
+    struct CmdBindIndexBuffer : public Cmd
     {
-      inline CmdBindIndices() : Cmd{ CmdType::BindIndices } {
+      inline CmdBindIndexBuffer() : Cmd{ CmdType::BindIndexBuffer } {
       }
 
-      inline CmdBindIndices(resource_ref<StorageBuffer> p_vertex_buffer)
-        : Cmd{ CmdType::BindIndices },
+      inline CmdBindIndexBuffer(resource<StorageBuffer> p_vertex_buffer)
+        : Cmd{ CmdType::BindIndexBuffer },
         vertex_buffer{ p_vertex_buffer } {
       }
 
-      resource_ref<StorageBuffer> vertex_buffer;
+      resource<StorageBuffer> vertex_buffer;
     };
 
 
@@ -189,8 +184,8 @@ namespace route
     using CmdDrawPrimitive2D = TCmdSWrapper<boxed_primitive_2d, CmdType::DrawPrimitive2D>;
     using CmdDrawPrimitive3D = TCmdSWrapper<boxed_primitive_3d, CmdType::DrawPrimitive3D>;
 
-    using CmdSetTexture = TCmdSWrapper<Texture, CmdType::SetTexture>;
-    using CmdSetShader = TCmdSWrapper<Shader, CmdType::SetShader>;
+    using CmdSetTexture = TCmdSSetResource<Texture, CmdType::SetTexture>;
+    using CmdSetShader = TCmdSSetResource<Shader, CmdType::SetShader>;
 
     using CmdSetViewport = CmdSetViewport;
     using CmdSetPrimitiveTopology = CmdSetPrimitiveTopology;
@@ -198,8 +193,8 @@ namespace route
     using CmdDraw = CmdDraw;
     using CmdDrawIndexed = CmdDrawIndexed;
 
-    using CmdBindVertices = CmdBindVertices;
-    using CmdBindIndices = CmdBindIndices;
+    using CmdBindVertexBuffer = CmdBindVertexBuffer;
+    using CmdBindIndexBuffer = CmdBindIndexBuffer;
 
   }
 #pragma endregion
@@ -236,7 +231,9 @@ namespace route
 
     template <typename _Ty, typename... _Args>
     FORCE_INLINE void _instance(_Args &&...args) {
-      new(this) _Ty(std::forward<_Args>(args)...);
+      if constexpr (std::is_constructible_v<_Ty, _Args...>)
+        new(this) _Ty(std::forward<_Args>(args)...);
+      // TODO: what should happen if this is called without creating _Ty?
     }
 
     template <typename _Ty>
@@ -253,7 +250,7 @@ namespace route
     rcq::CmdSetTexture m_texture;
     rcq::CmdSetShader m_shader;
     rcq::CmdDraw m_draw_vertices;
-    rcq::CmdBindVertices m_bind_vertex_source;
+    rcq::CmdBindVertexBuffer m_bind_vertex_source;
   };
 
   template<typename ..._Args>
@@ -274,11 +271,11 @@ namespace route
       _INSTANCE_CALL(rcq::CmdDrawPrimitive3D);
       break;
 
-    case CmdType::BindVertices:
-      _INSTANCE_CALL(rcq::CmdBindVertices);
+    case CmdType::BindVertexBuffer:
+      _INSTANCE_CALL(rcq::CmdBindVertexBuffer);
       break;
-    case CmdType::BindIndices:
-      _INSTANCE_CALL(rcq::CmdBindIndices);
+    case CmdType::BindIndexBuffer:
+      _INSTANCE_CALL(rcq::CmdBindIndexBuffer);
       break;
 
     case CmdType::SetPrimitiveTopology:
@@ -323,11 +320,11 @@ namespace route
       _dtor<rcq::CmdDrawPrimitive3D>();
       break;
 
-    case CmdType::BindVertices:
-      _dtor<rcq::CmdBindVertices>();
+    case CmdType::BindVertexBuffer:
+      _dtor<rcq::CmdBindVertexBuffer>();
       break;
-    case CmdType::BindIndices:
-      _dtor<rcq::CmdBindIndices>();
+    case CmdType::BindIndexBuffer:
+      _dtor<rcq::CmdBindIndexBuffer>();
       break;
 
     case CmdType::SetPrimitiveTopology:
