@@ -40,7 +40,7 @@ using namespace route;
 #define SDL_FNCHECK_V(call, statment) \
 { int err = (call); \
 if (err) \
-	{ char buf[256]{}; sprintf_s(buf, std::size(buf), "Failed to call " #call " at " __FILE__ ":%u, returned %d", __LINE__, err); Logger::write( buf, LogLevel::Error ); statment; }\
+	{ char buf[256]{}; sprintf_s(buf, std::size(buf), "Failed to call " #call " at " __FILE__ ":%u, error='%s', returned %d", __LINE__, SDL_GetError(), err); Logger::write( buf, LogLevel::Error ); statment; }\
 }
 
 template <typename T>
