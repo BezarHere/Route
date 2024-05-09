@@ -13,7 +13,7 @@ namespace route
   };
 
   template <typename _Ty, typename _Base = _Ty>
-  using resource_ref = Ref<_Ty, ResourceDeleter<_Ty, _Base>>;
+  using resource = Ref<_Ty, ResourceDeleter<_Ty, _Base>>;
 
   class Resource
   {
@@ -46,6 +46,10 @@ namespace route
 
   protected:
     inline GraphicsResource(device &device) : m_device{ device } {
+    }
+
+    FORCE_INLINE bool valid_assign(const GraphicsResource &other) const {
+      return &m_device == &other.m_device;
     }
 
   private:
