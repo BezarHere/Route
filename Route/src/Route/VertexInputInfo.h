@@ -1,31 +1,29 @@
 #pragma once
 #include "Resource.h"
 #include "Vertex.h"
+#include "StaticSpan.h"
 
 namespace route
 {
-
-
-
   enum class VertexInputType : uint32_t
   {
-    Byte = 0x1400,
+    Byte,
     UnsignedByte,
     Short,
     UnsignedShort,
     Int,
     UnsignedInt,
 
-    NormalizedByte = Byte | 0x10000,
-    NormalizedUnsignedByte = UnsignedByte | 0x10000,
-    NormalizedShort = Short | 0x10000,
-    NormalizedUnsignedShort = UnsignedShort | 0x10000,
-    NormalizedInt = Int | 0x10000,
-    NormalizedUnsignedInt = UnsignedInt | 0x10000,
+    NormalizedByte,
+    NormalizedUnsignedByte,
+    NormalizedShort,
+    NormalizedUnsignedShort,
+    NormalizedInt,
+    NormalizedUnsignedInt,
 
-    HalfFloat = 0x140B,
-    Float = 0x1406,
-    Double = 0x140A
+    HalfFloat,
+    Float,
+    Double
   };
 
   enum class VertexIndexType : uint16_t
@@ -40,19 +38,20 @@ namespace route
 
   enum class VertexInputSize : uint8_t
   {
-    Single = 1,
+    One = 1,
+    R = 1,
 
-    Double = 2,
+    Two = 2,
     Vec2 = 2,
+    RG = 2,
 
-    Trible = 3,
-    RGB = 3,
+    Three = 3,
     Vec3 = 3,
+    RGB = 3,
 
-    Qoudruble = 4,
+    Four = 4,
     Vec4 = 4,
-    RGBA = 4,
-    Color = 4
+    RGBA = 4
   };
 
 
@@ -62,33 +61,31 @@ namespace route
     VertexInputSize size;
   };
 
-  typedef unsigned VInputDescID;
 
-  struct VertexInputState
+  struct VertexInputInfo
   {
   public:
+    // 24 seems reasonable
+    static constexpr size_t MaxVertexAttributes = 24ULL;
+
     static constexpr int NormalizedVInputTypeBit = 0x10000;
-    using container_type = vector<VInputAttribute>;
+    using container_type = StaticSpan<VInputAttribute, MaxVertexAttributes>;
 
-    // 32 seems reasonable
-    static constexpr size_t MaxVertexAttributes = 32ULL;
 
-    VertexInputState();
-    ~VertexInputState();
+    VertexInputInfo(uint32_t offset, uint32_t stride, const container_type &attributes);
+    VertexInputInfo(const container_type &attributes);
+    VertexInputInfo();
+    ~VertexInputInfo();
 
-    VertexInputState( const VertexInputState &copy );
-    VertexInputState( VertexInputState &&move ) noexcept;
-    VertexInputState &operator=( const VertexInputState &copy );
-    VertexInputState &operator=( VertexInputState &&move ) noexcept;
+    VertexInputInfo(const VertexInputInfo &copy);
+    VertexInputInfo(VertexInputInfo &&move) noexcept;
+    VertexInputInfo &operator=(const VertexInputInfo &copy);
+    VertexInputInfo &operator=(VertexInputInfo &&move) noexcept;
 
     /// @param stride a stride of zero will be defaulted to the vertex size.
     ///	              it's always better to set the stride either zero or greater/equal to the vertex size 
-    void set_stride( uint32_t stride );
-    void set_offset( uint32_t offset );
-
-    inline VInputDescID get_name() const {
-      return m_id;
-    }
+    void set_stride(uint32_t stride);
+    void set_offset(uint32_t offset);
 
     inline container_type &get_attrs() {
       return m_container;
@@ -112,9 +109,8 @@ namespace route
     void _validate_attributes();
 
   private:
-    VInputDescID m_id;
-    container_type m_container;
     uint32_t m_offset;
     uint32_t m_stride;
+    container_type m_container;
   };
 }
