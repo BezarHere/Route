@@ -77,7 +77,7 @@ static constexpr inline route::Error glErrRT( const GLenum glErr ) {
 #define GL_CALL(call) GL_CALL_POST(call, (void)0)
 #define GL_CALL_POST(call, post) \
 { call; GLenum err = glGetError();\
-if (err) { char msg[1024]{}; sprintf_s(msg, "GL::Error calling '" #call "', code=%X", err); Logger::write( msg, LogLevel::Error ); post; }\
+if (err) { char msg[1024]{}; sprintf_s(msg, "GL::Error calling '" #call "' at '%s' line %u, code=%X", __FILE__, __LINE__, err); Logger::write( msg, LogLevel::Error ); post; }\
 }
 #else 
 #define GL_CALL(call) (void)(call)
