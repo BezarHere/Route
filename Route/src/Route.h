@@ -10,6 +10,7 @@
 
 #include "Route/Performance.h"
 #include "Route/Application.h"
+#include "Route/GraphicsDevice.h"
 
 namespace route
 {
