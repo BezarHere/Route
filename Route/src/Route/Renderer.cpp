@@ -7,17 +7,35 @@
 #include "Application.h"
 #include "GraphicsProfile.h"
 
-#include "internal/storage_buffer.h"
+#include "internal/gl_utils.h"
+#include "internal/pipeline.h"
 #include "Pipeline.h"
+
+#ifdef GAPI_GL
+inline static void gl_update_vao(const VertexInputInfo &info) {
+  const size_t stride = info.get_stride() ? info.get_stride() : info.get_vertex_size();
+  for (GLuint i = 0; i < info.get_attrs().size(); i++)
+  {
+    const auto &attr = info.get_attrs()[i];
+    glEnableVertexAttribArray(i);
+    glVertexAttribPointer(
+      i,
+      (GLint)attr.size,
+      gl_rt::get_vertex_type(attr.type),
+      gl_rt::is_normalized(attr.type),
+      stride, (const void *)info.get_offset());
+  }
+}
+#endif
 
 namespace route
 {
   struct PrimitivesData
   {
-    resource_ref<StorageBuffer> rect_buffer;
+    resource<StorageBuffer> rect_buffer;
     array<CommandInstance, 3> rect_commands = {
       CommandInstance(rcq::CmdType::SetPrimitiveTopology, PrimitiveTopology::TriangleStrips),
-      CommandInstance(rcq::CmdType::BindVertices, rect_buffer),
+      CommandInstance(rcq::CmdType::BindVertexBuffer, rect_buffer),
       CommandInstance(rcq::CmdType::Draw)
     };
   };
@@ -35,20 +53,49 @@ namespace route
         "in vec3 clr; layout (location = 0) out vec4 Color;"
         "void main() { Color = vec4(clr, 1.0); }"
         ;
-      resource_ref<Shader> vertex_shader_res = renderer.get_device().create_shader(vertex_shader, ShaderType::Vertex);
-      resource_ref<Shader> fragment_shader_res = renderer.get_device().create_shader(frag_shader, ShaderType::Fragment);
+      resource<Shader> vertex_shader_res = renderer.get_device().create_shader(vertex_shader, ShaderType::Vertex);
+      resource<Shader> fragment_shader_res = renderer.get_device().create_shader(frag_shader, ShaderType::Fragment);
 
-      pipeline = Pipeline({ vertex_shader_res.get(), fragment_shader_res.get() });
 
-      primitive_data.rect_buffer = renderer.get_device().create_buffer(StorageBufType::Vertex, sizeof(Vrtx8C2) * 4);
-      primitive_data.rect_buffer->update()
+
+      StaticSpan<VInputAttribute, 4> via{};
+      via.emplace_back();
+      via.back().type = VertexInputType::Float;
+      via.back().size = VertexInputSize::Vec2;
+
+      via.emplace_back();
+      via.back().type = VertexInputType::NormalizedUnsignedByte;
+      via.back().size = VertexInputSize::RGBA;
+
+      via.emplace_back();
+      via.back().type = VertexInputType::NormalizedUnsignedShort;
+      via.back().size = VertexInputSize::Vec2;
+
+      PipelineCreateInfo info{};
+      info.shaders = { vertex_shader_res.get(), fragment_shader_res.get() };
+      info.input_states = { via };
+
+      pipeline = renderer.get_device().create_pipeline(info);
+
+
+      const Vrtx8C2 vertices[6] = {
+        { {0.5f, 0.5f}, { 255, 255, 255 }, {} },
+        { {-0.5f, 0.5f}, { 0, 255, 255 }, {} },
+        { {-0.5f, -0.5f}, { 255, 0, 255 }, {} },
+        { {0.5f, 0.5f}, { 255, 255, 0 }, {} },
+        { {-0.5f, -0.5f}, { 0, 255, 0 }, {} },
+        { {0.5f, -0.5f}, { 255, 0, 0 }, {} }
+      };
+
+      primitive_data.rect_buffer = renderer.get_device().create_buffer(StorageBufType::Vertex, sizeof(vertices));
+      std::cout << "rect primitive update: " << primitive_data.rect_buffer->update(vertices, sizeof(vertices), 0) << '\n';
     }
 
     ~APIState() {
     }
 
     Renderer &renderer;
-    Pipeline pipeline;
+    resource<Pipeline> pipeline;
     Vec2u last_window_size;
     PrimitivesData primitive_data = {};
 #if GAPI_VK
@@ -57,32 +104,17 @@ namespace route
 
   };
 
-  Renderer::Renderer(Window &window)
-    : m_window{ window }, m_device{ *this }, m_commands{} {
-    // TODO: start OpenGL
-    m_commands.reserve(DefaultCmdBufCapacity);
+  Renderer::Renderer(GraphicsDevice &device)
+    : m_window{ device.m_window }, m_device{ device }, m_commands{ new commands_container() } {
 
-    m_context = OpenGL::create_context(static_cast<LPSDLWindow>(m_window.m_handle));
-    if (!m_context)
-    {
-      Logger::write("Failed to create context for Renderer", LogLevel::Error);
-      return;
-    }
   }
 
   Renderer::~Renderer() {
-    const auto current_context = OpenGL::get_context();
-    const auto current_window = OpenGL::get_context_window();
-
-    OpenGL::set_context(m_window.m_handle, m_context);
-    delete m_api_state;
-    OpenGL::delete_context(m_context);
-
-    OpenGL::set_context(current_window, current_context);
+    delete m_commands;
   }
 
   void Renderer::render(const Application &app) {
-    SDL_FNCHECK_V(OpenGL::set_context(m_window.m_handle, m_context), return);
+    m_device._begin();
 
     constexpr Vec2f verts[]
     {
@@ -96,92 +128,102 @@ namespace route
 
     const auto wnd_sz = m_window.size();
     if (wnd_sz != m_api_state->last_window_size)
-      glViewport(-32, -32, wnd_sz.x, wnd_sz.y);
+      glViewport(0, 0, wnd_sz.x, wnd_sz.y);
 
     m_api_state->last_window_size = wnd_sz;
-    m_device._unlocked();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    GLuint vbo{ 0 };
+    //GLuint vbo{ 0 };
     GLuint vao{ 0 };
 
     GL_CALL(glGenVertexArrays(1, &vao));
-    GL_CALL(glGenBuffers(1, &vbo));
-    GL_CALL(glBindVertexArray(vao));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2f) * std::size(verts), verts, GL_STATIC_DRAW));
+    //GL_CALL(glGenBuffers(1, &vbo));
+    //GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+    //GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2f) * std::size(verts), verts, GL_STATIC_DRAW));
 
-    GL_CALL(glEnableVertexAttribArray(0));
-    GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), nullptr));
 
     set_pipeline(m_api_state->pipeline);
-    _bind_shader_program();
+    _bind_pipeline();
+    //GL_CALL(glBindVertexArray(vao));
+    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, (GLuint)m_api_state->primitive_data.rect_buffer->get_id()));
+
     GL_CALL(glBindVertexArray(vao));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+    GL_CALL(glEnableVertexAttribArray(0));
+    GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vrtx8C2), nullptr));
 
     GL_CALL(glDrawArrays(GL_TRIANGLES, 0, std::size(verts)));
 
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GL_CALL(glBindVertexArray(0));
-    m_state.Pipeline = 0;
-    _bind_shader_program();
+    //m_state.Pipeline = 0;
+    //_bind_pipeline();
 
-    GL_CALL(glDeleteBuffers(1, &vbo));
+    //GL_CALL(glDeleteBuffers(1, &vbo));
     GL_CALL(glDeleteVertexArrays(1, &vao));
 
+    // todo: move to the device
     SDL_GL_SwapWindow(static_cast<LPSDLWindow>(m_window.m_handle));
+    m_device._end();
   }
 
   void Renderer::set_buffer(const StorageBuffer &buffer) {
     m_state.Buffers[static_cast<size_t>(buffer.get_type())] = buffer.get_id();
   }
 
-  void Renderer::set_pipeline(const Pipeline &shader) {
-    m_state.Pipeline = shader.get_id();
-  }
-
-  bool Renderer::is_locked() const {
-    return m_lock;
+  void Renderer::set_pipeline(const resource<Pipeline> &pipeline) {
+    m_state.Pipeline = pipeline;
   }
 
   void Renderer::_initialize() {
-    const auto current_context = OpenGL::get_context();
-    const auto current_window = OpenGL::get_context_window();
-
-    SDL_FNCHECK_V(OpenGL::set_context(m_window.m_handle, m_context), return);
+    m_device._begin();
 
     m_api_state = new APIState{ *this };
     m_window._initialize();
 
-    if (current_context && current_window)
-      SDL_FNCHECK_V(OpenGL::set_context(current_window, current_context), return);
+    m_device._end();
+  }
+
+  void Renderer::_finalize() {
+    m_device._begin();
+    delete m_api_state;
+    m_device._end();
   }
 
   void Renderer::_bind_buffer(const StorageBufType type) const {
 #ifdef GAPI_GL
     GAPI_IF_GL(Application::graphics_api() == GraphicsAPI::OpenGL) {
-      glBindBuffer(_rt::storage_buffer::to_gl_type(type), _rt::to_gl_name(m_state.Buffers[static_cast<size_t>(type)]));
+      glBindBuffer(gl_rt::get_buffer_type(type), gl_rt::vpid_gl_name(m_state.Buffers[static_cast<size_t>(type)]));
       // TODO: check for errors?
     }
 #endif // GAPI_GL
 
   }
 
-  void Renderer::_bind_shader_program() const {
+  void Renderer::_bind_pipeline() const {
+    if (!m_state.Pipeline)
+    {
+      Logger::write("No pipeline is set to bind", LogLevel::Error);
+      return;
+    }
+
+    Pipeline &pipeline = *m_state.Pipeline;
+
 #ifdef GAPI_GL
     GAPI_IF_GL(Application::graphics_api() == GraphicsAPI::OpenGL) {
-      glUseProgram(_rt::to_gl_name(m_state.Pipeline));
+      auto *data = reinterpret_cast<const Pipeline::GLState *>(m_state.Pipeline->get_id());
+      glUseProgram(data->shader_program);
+      glBindVertexArray(data->vao);
       // TODO: check for errors?
     }
 #endif // GAPI_GL
   }
 
   void Renderer::_process_cmds() {
-    for (size_t i = 0; i < m_commands.size(); i++)
+    for (size_t i = 0; i < m_commands->size(); i++)
     {
-      _do_command(m_commands[i]);
+      _do_command((*m_commands)[i]);
     }
   }
 
@@ -189,13 +231,12 @@ namespace route
     using rcq::CmdType;
     switch (command.get<rcq::Cmd>().get_type())
     {
-    case CmdType::BindVertices:
+    case CmdType::BindVertexBuffer:
       {
-        const auto &cmd = command.get<rcq::CmdBindVertices>();
+        const auto &cmd = command.get<rcq::CmdBindVertexBuffer>();
         const auto &vertex_buf = cmd.vertex_buffer;
         RT_ASSERT_RELEASE(vertex_buf->get_type() == StorageBufType::Vertex);
         set_buffer(*vertex_buf);
-        _bind_buffer(StorageBufType::Vertex);
         return;
       }
     case CmdType::Draw:
@@ -203,7 +244,9 @@ namespace route
         const auto &cmd = command.get<rcq::CmdDraw>();
 #ifdef GAPI_GL
         GAPI_IF_GL(GraphicsProfile::graphics_api() == GraphicsAPI::OpenGL) {
-          glDrawArrays(_rt::to_gl_primitive(m_state.topology), cmd.offset, cmd.count);
+          const auto &input = m_state.Pipeline->get_create_info().input_states;
+          gl_update_vao(input);
+          glDrawArrays(gl_rt::to_gl_primitive(m_state.topology), cmd.offset, cmd.count);
           return;
         }
 #endif // GAPI_GL

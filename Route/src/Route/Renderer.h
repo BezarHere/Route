@@ -2,7 +2,7 @@
 #include "Scene.h"
 #include "Window.h"
 #include "Pipeline.h"
-#include "RenderCommandQueue.h"
+#include "RenderCommands.h"
 
 
 namespace route
@@ -13,7 +13,7 @@ namespace route
   struct RendererState
   {
     array<StorageBufferID, (int)StorageBufType::_Max> Buffers{};
-    PipelineID Pipeline{};
+    resource<Pipeline> Pipeline{};
     PrimitiveTopology topology;
   };
 
@@ -25,8 +25,7 @@ namespace route
     friend GraphicsDevice;
     friend Application;
   public:
-    // 8mb worth of command instances
-    static constexpr size_t DefaultCmdBufCapacity = 8388608ULL / sizeof(CommandInstance);
+    using commands_container = RenderCollector::container_type;
     ~Renderer();
 
     void render(const Application &app);
@@ -40,13 +39,13 @@ namespace route
     }
 
     void set_buffer(const StorageBuffer &buffer);
-    void set_pipeline(const Pipeline &shader);
+    void set_pipeline(const resource<Pipeline> &pipeline);
 
     inline StorageBufferID get_buffer(StorageBufType type) const {
       return m_state.Buffers[static_cast<size_t>(type)];
     }
 
-    inline PipelineID get_pipeline() const {
+    inline const resource<Pipeline> &get_pipeline() const {
       return m_state.Pipeline;
     }
 
@@ -56,9 +55,10 @@ namespace route
     Renderer &operator =(const Renderer &) = delete;
 
     void _initialize();
+    void _finalize();
 
     void _bind_buffer(StorageBufType type) const;
-    void _bind_shader_program() const;
+    void _bind_pipeline() const;
 
     void _process_cmds();
     void _do_command(const CommandInstance &command);
@@ -70,9 +70,7 @@ namespace route
 
     RendererState m_state;
 
-    vector<CommandInstance> m_commands;
-
-    RendererContext m_context;
+    commands_container *m_commands;
     APIState *m_api_state;
 
   };
