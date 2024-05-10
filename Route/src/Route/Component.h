@@ -1,105 +1,105 @@
 #pragma once
 #include "Bases.h"
 #include "Traits.h"
-#include "Vector.h"
-#include "IMap.h"
-#include "Primitives.h"
-#include "Resource.h"
-#include "StorageBuffer.h"
+#include "RenderCommands.h"
 
 namespace route
 {
-	class Object;
+  class Object;
 
-	struct Component
-	{
-		virtual bool compatible_with( const Object &object ) const = 0;
+  typedef intptr_t CompTypeID;
 
-		virtual void added( Object &object ) = 0;
-		virtual void removed( Object &object ) = 0;
-		virtual void update( Object &object ) = 0;
+  class Component
+  {
+  public:
+    enum CompFlags
+    {
+      eCompFlag_None = 0x0000,
+      eCompFlag_Updated = 0x0001,
+      eCompFlag_Drawen = 0x0002,
+      eCompFlag_Physics = 0x0004,
+    };
 
-		virtual ~Component() {
-		};
+    inline Component(CompTypeID type, CompFlags flags)
+      : type_id{ type }, flags{ flags } {
+    }
 
-	};
+    virtual bool compatible_with(const Object &object) const = 0;
 
-	template <typename _Traits>
-	struct TSpaceComponent : Component
-	{
-	public:
-		using transform_type = typename _Traits::transform;
-		using direction_type = typename _Traits::direction;
+    // update from the fixed-update thread, used to process input/post-rendering state
+    // linked to the fps
+    // needs a specific flag set to be engine-called
+    virtual void update(real_t deltatime) = 0;
+    // update from the physics thread, used to process post-physics actions
+    // linked to the tickrate
+    // needs a specific flag set to be engine-called
+    virtual void update_physics(real_t deltatime) = 0;
+    // forwards rendering commands to be drawn
+    // needs a specific flag set to be engine-called
+    virtual void draw(RenderCollector collector) = 0;
 
-		static bool has_same_space( const Object &obj );
+    virtual ~Component() {
+    };
 
-		inline bool compatible_with( const Object &object ) const override {
-			return has_same_space( object );
-		}
+    const CompTypeID type_id;
+    const CompFlags flags;
+  };
 
-		inline void set_offset( const direction_type &offset ) {
-			m_offset = offset;
-		}
+  template <typename _Traits>
+  class TSpaceComponent : public Component
+  {
+  public:
+    using transform_type = typename _Traits::transform;
+    using direction_type = typename _Traits::direction;
 
-		inline const direction_type &get_offset() {
-			return m_offset;
-		}
+    inline TSpaceComponent(CompTypeID type, CompFlags flags, const transform_type &transform)
+      : Component(type, flags), m_transform{ transform } {
+    }
 
-	protected:
-		direction_type m_offset;
-	};
+    static bool has_same_space(const Object &obj);
 
-	template <typename _Traits>
-	struct TDrawenComponent : TSpaceComponent<_Traits>
-	{
-	public:
+    inline bool compatible_with(const Object &object) const override {
+      return has_same_space(object);
+    }
 
-		
+    inline void set_transform(const transform_type &transform) {
+      m_transform = transform;
+    }
 
-	protected:
-		resource_ref<StorageBuffer> m_vbuf;
-		resource_ref<StorageBuffer> m_ibuf;
-	};
+    inline const transform_type &get_transform() {
+      return m_transform;
+    }
 
-	using Component2D = TSpaceComponent<traits::Impl2D>;
-	using Component3D = TSpaceComponent<traits::Impl3D>;
+  protected:
+    transform_type m_transform;
+  };
 
-	template <typename _Ty>
-	struct ShapeComp : public Component2D
-	{
-	public:
-		using primitive_boxed_type = _Ty;
+  using Component2D = TSpaceComponent<traits::Impl2D>;
+  using Component3D = TSpaceComponent<traits::Impl3D>;
 
-		inline ShapeComp() { }
+  class ShapeComp : public Component
+  {
+  public:
+    static constexpr CompTypeID type_id = 0x1f2f3f4f;
+    static constexpr CompFlags flags = (CompFlags)(eCompFlag_Drawen | eCompFlag_Updated);
 
-		void added( Object &object ) override;
+    inline ShapeComp(const ShapeData &data)
+      : Component(type_id, flags), shape{ data } {
+    }
 
-		void removed( Object &object ) override;
+    inline bool compatible_with(const Object &object) const override {
+      return true;
+    }
+    inline  void update(real_t deltatime) override { }
+    inline void update_physics(real_t deltatime) override { }
+    void draw(RenderCollector collector) override;
 
-		void update( Object &object ) override;
+    ShapeData shape;
+  };
 
-		primitive_boxed_type primitive;
-	};
-
-	using Shape2DComp = ShapeComp<boxed_primitive_2d>;
-	using Shape3DComp = ShapeComp<boxed_primitive_3d>;
-
-	template <typename _Ty>
-	_INLINE_VAR constexpr bool is_component_v =
-		std::is_same_v<Component, _Ty> || std::is_base_of_v<Component, _Ty>;
-	using component = Component;
-
-
-	template<typename _Ty>
-	inline void ShapeComp<_Ty>::added( Object &object ) {
-	}
-
-	template<typename _Ty>
-	inline void ShapeComp<_Ty>::removed( Object &object ) {
-	}
-
-	template<typename _Ty>
-	inline void ShapeComp<_Ty>::update( Object &object ) {
-	}
+  template <typename _Ty>
+  _INLINE_VAR constexpr bool is_component_v =
+    std::is_same_v<Component, _Ty> || std::is_base_of_v<Component, _Ty>;
+  using component = Component;
 
 }

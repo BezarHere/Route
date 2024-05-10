@@ -15,4 +15,7 @@ namespace route
 		return std::is_same_v<transform_type, Transform3D>;
 	}
 
+	void ShapeComp::draw(RenderCollector collector) {
+	}
+
 }
