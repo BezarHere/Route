@@ -1,16 +1,18 @@
 #include "pch.h"
 #include "../pch.h"
 #include "Pipeline.h"
+#include "internal/pipeline.h"
+#include "GraphicsDevice.h"
 #include "Logger.h"
 #include "ResourceServer.h"
 
-static inline PipelineID compile_program(const Blob<ShaderID> &shaders) {
+static inline GLuint compile_program(const Blob<ShaderID> &shaders) {
   GLuint prog = glCreateProgram();
 
   if (prog == 0)
   {
     Logger::write(format_join("Failed to create shader program: ", glErrRT(glGetLastError())));
-    return PipelineID();
+    return GLuint();
   }
 
   for (size_t i = 0; i < shaders.length; i++)
@@ -36,10 +38,10 @@ static inline PipelineID compile_program(const Blob<ShaderID> &shaders) {
     return 0;
   }
 
-  return (ShaderID)prog;
+  return prog;
 }
 
-static inline PipelineID compile_program(const Blob<Shader *> &shaders) {
+static inline GLuint compile_program(const Blob<const Shader *> &shaders) {
   ShaderID ids[Pipeline::MaxShadersLinked] = {};
   const size_t len = std::min(shaders.length, std::size(ids));
 
@@ -52,33 +54,40 @@ static inline PipelineID compile_program(const Blob<Shader *> &shaders) {
   return compile_program(Blob<ShaderID>(ids, len));
 }
 
-static inline void destroy_program(PipelineID prog) {
+// TODO: move to the graphics device source
+static inline PipelineID create_pipeline(const PipelineCreateInfo &info, GraphicsDevice &device) {
 #ifdef GAPI_GL
-  GL_CALL(glDeleteProgram((GLuint)prog));
+  GAPI_IF_GL(GraphicsProfile::opengl()) {
+    Pipeline::GLState *state = new Pipeline::GLState();
+    state->shader_program = compile_program(info.shaders);
+    glCreateVertexArrays(1, &state->vao);
+    return (PipelineID)state;
+  }
 #endif
 }
 
 namespace route
 {
-  Pipeline::Pipeline() : m_id{} {
-  }
-  Pipeline::Pipeline(const Blob<Shader *> &pShaders)
-    : m_id{ compile_program(pShaders) } {
+  Pipeline::Pipeline(const PipelineCreateInfo &info, device &device)
+    : GraphicsResource(device), m_id{ create_pipeline(info, device) }, m_info{ info } {
 
   }
 
-  Pipeline::Pipeline(Pipeline &&move) : m_id{ move.m_id } {
+  Pipeline::Pipeline(Pipeline &&move) : GraphicsResource(move.get_device()), m_id{ move.m_id } {
     move.m_id = 0;
   }
 
   Pipeline &Pipeline::operator=(Pipeline &&move) {
-    destroy_program(m_id);
+    if (!this->valid_assign(move))
+      return *this;
+
+    get_device()._queue_free_pipeline(*this);
     m_id = move.m_id;
     move.m_id = 0;
     return *this;
   }
 
   Pipeline::~Pipeline() noexcept {
-    destroy_program(m_id);
+    get_device()._queue_free_pipeline(*this);
   }
 }

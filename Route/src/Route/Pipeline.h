@@ -1,19 +1,29 @@
 #pragma once
 #include "Shader.h"
-#include "VertexInputState.h"
+#include "VertexInputInfo.h"
 
 namespace route
 {
 
   typedef vpid_t PipelineID;
 
-  class Pipeline
+  struct PipelineCreateInfo
   {
+    Blob<const Shader *> shaders;
+    VertexInputInfo input_states;
+  };
+
+
+  // implementation GL: GL_SHADER
+  // implementation VK: vkShaderModule
+  class Pipeline : public GraphicsResource
+  {
+    friend GraphicsDevice;
   public:
     static constexpr size_t MaxShadersLinked = 6;
 
-    Pipeline();
-    Pipeline(const Blob<Shader *> &pShaders);
+    struct GLState;
+    struct VKState;
     Pipeline(Pipeline &&);
     Pipeline &operator=(Pipeline &&);
     ~Pipeline() noexcept;
@@ -22,13 +32,18 @@ namespace route
       return m_id;
     }
 
+    inline const PipelineCreateInfo &get_create_info() const {
+      return m_info;
+    }
+
   private:
+    Pipeline(const PipelineCreateInfo &info, device &device);
     Pipeline(const Pipeline &) = delete;
     Pipeline &operator=(const Pipeline &) = delete;
 
   private:
     PipelineID m_id;
-    VertexInputState m_input_state;
+    PipelineCreateInfo m_info;
   };
 
 
