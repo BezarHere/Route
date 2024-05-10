@@ -7,7 +7,7 @@ namespace route
 {
 	class Scene;
 	class Object;
-	struct Component;
+	class Component;
 
 	using object_path = string;
 	using object_name = string;

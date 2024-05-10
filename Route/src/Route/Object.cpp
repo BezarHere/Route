@@ -27,7 +27,7 @@ namespace route
 	void Object::update( real_t deltatime ) {
 		for (const auto &comp : m_components)
 		{
-			comp->update( *this );
+			comp->update( deltatime );
 		}
 
 		if (type == ObjectType::Object2D)
