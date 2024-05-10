@@ -99,6 +99,7 @@ namespace route
   template ResourceServer<Material>;
   template ResourceServer<Shader>;
   template ResourceServer<StorageBuffer>;
+  template ResourceServer<Pipeline>;
 
   inline void Application::TRSH::execute(bool state) {
     const auto mem = Performance::get_memory_usage();
@@ -107,7 +108,7 @@ namespace route
     * Template defined below are which resource servers are to be template instanced
     * Not the best place to put such thing, but it works well
     */
-    execute<Resource, GraphicsResource, IOResource, Texture, Material, Shader, StorageBuffer>(state);
+    execute<Resource, GraphicsResource, IOResource, Texture, Material, Shader, StorageBuffer, Pipeline>(state);
 
     std::cout << "mem usage diff after " << (state ? "running" : "closing") << " the ResServers: "
       << (Performance::get_memory_usage() - mem) << '\n';

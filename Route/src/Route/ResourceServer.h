@@ -36,7 +36,7 @@ namespace route
     }
 
     template <typename _Ey, typename... _Args>
-    static resource_ref<_Ty> create_resource(_Args &&...vargs);
+    static resource<_Ty> create_resource(_Args &&...vargs);
 
     template <typename _Ey>
     static _Ey *_allocate();
@@ -54,10 +54,10 @@ namespace route
 
   template<typename _Ty>
   template<typename _Ey, typename ..._Args>
-  inline resource_ref<_Ty> ResourceServer<_Ty>::create_resource(_Args && ...args) {
+  inline resource<_Ty> ResourceServer<_Ty>::create_resource(_Args && ...args) {
     _Ey *ptr = _allocate(sizeof(_Ey));
     new(ptr) _Ey(args...);
-    return resource_ref(ptr);
+    return resource(ptr);
   }
 
   template<typename _Ty>
