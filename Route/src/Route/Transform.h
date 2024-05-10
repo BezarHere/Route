@@ -318,12 +318,12 @@ namespace route
 	{
 	public:
 		using value_type = float_t;
-		using vector_type = TVector2<value_type>;
+		using vector_type = Vec3f;
 
 		union transform_element4x3
 		{
-			Vec3f v[ 4 ]{ Vec3f( 1.0f, 0.0f, 0.0f ), Vec3f( 0.0f, 1.0f, 0.0f ), Vec3f( 0.0f, 0.0f, 1.0f ), Vec3f( 0.0f, 0.0f, 0.0f ) };
-			float_t f[ 12 ];
+			vector_type v[4]{ vector_type(1.0f, 0.0f, 0.0f), vector_type(0.0f, 1.0f, 0.0f), vector_type(0.0f, 0.0f, 1.0f), vector_type(0.0f, 0.0f, 0.0f) };
+			float_t f[12];
 			struct
 			{
 				union
@@ -331,27 +331,27 @@ namespace route
 					Basis basis;
 					struct
 					{
-						Vec3f xdir;
-						Vec3f ydir;
-						Vec3f zdir;
+						vector_type xdir;
+						vector_type ydir;
+						vector_type zdir;
 					};
 				};
-				Vec3f origin;
+				vector_type origin;
 			};
 		};
-		static_assert(sizeof( transform_element4x3 ) == sizeof( float_t ) * 12, "Invalid transform elements size");
+		static_assert(sizeof(transform_element4x3) == sizeof(float_t) * 12, "Invalid transform elements size");
 
 
 
 		inline constexpr Transform3D()
-			: m_elements{ Vec3f( 1.0f, 0.0f, 0.0f ), Vec3f( 0.0f, 1.0f, 0.0f ), Vec3f( 0.0f, 0.0f, 1.0f ), Vec3f( 0.0f, 0.0f, 0.0f ) } {
+			: m_elements{ vector_type(1.0f, 0.0f, 0.0f), vector_type(0.0f, 1.0f, 0.0f), vector_type(0.0f, 0.0f, 1.0f), vector_type(0.0f, 0.0f, 0.0f) } {
 		}
 
-		inline constexpr Transform3D( Vec3f xdir, Vec3f ydir, Vec3f zdir, Vec3f origin = Vec3f() )
+		inline constexpr Transform3D(vector_type xdir, vector_type ydir, vector_type zdir, vector_type origin = vector_type())
 			: m_elements{ xdir, ydir, zdir, origin } {
 		}
 
-		inline constexpr Transform3D( const Transform3D &copy )
+		inline constexpr Transform3D(const Transform3D &copy)
 			: m_elements{ copy.m_elements } {
 		}
 
@@ -359,42 +359,42 @@ namespace route
 			return m_elements.basis.determinant();
 		}
 
-		inline Vec3f get_position() const noexcept {
+		inline vector_type get_position() const noexcept {
 			return m_elements.origin;
 		}
 
-		inline Vec3f get_scale() const noexcept {
+		inline vector_type get_scale() const noexcept {
 			return { m_elements.xdir.length(), basis_determinant() > 0 ? m_elements.ydir.length() : -m_elements.ydir.length(), m_elements.zdir.length() };
 		}
 
-		inline void set_position( Vec3f pos ) {
+		inline void set_position(vector_type pos) {
 			m_elements.origin = pos;
 		}
 
-		inline void translate( Vec3f offset ) {
+		inline void translate(vector_type offset) {
 			m_elements.origin += offset;
 		}
 
-		inline void set_scale( Vec3f scale ) {
+		inline void set_scale(vector_type scale) {
 			m_elements.xdir = m_elements.xdir.normalized() * scale.x;
 			m_elements.ydir = m_elements.ydir.normalized() * scale.y;
 			m_elements.zdir = m_elements.zdir.normalized() * scale.z;
 		}
 
-		inline constexpr Vec3f get_back_dir() const noexcept {
+		inline constexpr vector_type get_back_dir() const noexcept {
 			return m_elements.zdir;
 		}
 
-		inline constexpr Vec3f get_down_dir() const noexcept {
+		inline constexpr vector_type get_down_dir() const noexcept {
 			return m_elements.ydir;
 		}
 
-		inline constexpr Vec3f get_left_dir() const noexcept {
+		inline constexpr vector_type get_left_dir() const noexcept {
 			return m_elements.xdir;
 		}
 
-		inline constexpr Vec3f operator*( const Vec3f &other ) const {
-			return Vec3f(
+		inline constexpr vector_type operator*(const vector_type &other) const {
+			return vector_type(
 				(m_elements.xdir.x * other.x) + (m_elements.ydir.x * other.y) + (m_elements.zdir.x * other.z) + m_elements.origin.x,
 				(m_elements.xdir.y * other.x) + (m_elements.ydir.y * other.y) + (m_elements.zdir.y * other.z) + m_elements.origin.y,
 				(m_elements.xdir.z * other.x) + (m_elements.ydir.z * other.y) + (m_elements.zdir.z * other.z) + m_elements.origin.z

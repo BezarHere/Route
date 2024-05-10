@@ -11,6 +11,7 @@ namespace route
 		using real_this_type = TVector2<_R, _R>;
 		using value_type = _T;
 		using real_type = _R;
+		using lower_type = real_type;
 
 		constexpr inline TVector2( value_type xx, value_type yy ) noexcept
 			: x{ xx }, y{ yy } {
@@ -239,6 +240,7 @@ namespace route
 	{
 		using this_type = TVector3<_T>;
 		using value_type = _T;
+		using lower_type = TVector2<_T>;
 
 		constexpr inline TVector3( value_type xx, value_type yy, value_type zz ) noexcept
 			: x{ xx }, y{ yy }, z{ zz } {
@@ -601,6 +603,7 @@ namespace route
 	{
 		using this_type = BaseVector4Template<_T>;
 		using value_type = _T;
+		using lower_type = TVector3<_T>;
 
 		constexpr inline BaseVector4Template( value_type xx, value_type yy, value_type zz, value_type ww ) noexcept
 			: x{ xx }, y{ yy }, z{ zz }, w{ ww } {
