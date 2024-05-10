@@ -25,6 +25,16 @@ static inline void log( const char *prefix, const char *text ) {
 	(void)asctime_s( time_str + 1, std::size( time_str ) - 1, &current );
 	time_str[ 0 ] = '[';
 
+	// remove stupid new line
+	for (char *t_str = time_str; *t_str; t_str++)
+	{
+		if (*t_str == '\n' || *t_str == '\r')
+		{
+			*t_str = 0;
+			break;
+		}
+	}
+
 	// TODO: log to file
 
 	if (prefix)
