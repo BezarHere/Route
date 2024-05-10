@@ -133,7 +133,7 @@ namespace route
     }
 
     template <size_t _Sz2>
-    inline StaticSpan(StaticSpan<_Ty, _Sz2> &&move) : m_size{ move.m_size } {
+    inline StaticSpan(StaticSpan<_Ty, _Sz2> &&move) : m_size{ move.size() } {
       if (max_size < move.m_size)
         throw std::length_error("StaticSpan: can't move from a larger span");
       _Move(move._Begin(), move._End());
@@ -141,8 +141,8 @@ namespace route
     }
 
     template <size_t _Sz2>
-    inline StaticSpan(const StaticSpan<_Ty, _Sz2> &copy) : m_size{ copy.m_size } {
-      if (max_size < move.m_size)
+    inline StaticSpan(const StaticSpan<_Ty, _Sz2> &copy) : m_size{ copy.size() } {
+      if (max_size < copy.size())
         throw std::length_error("StaticSpan: can't copy from a larger span");
       _Copy(copy._Begin(), copy._End());
     }
@@ -162,7 +162,7 @@ namespace route
 
     template <size_t _Sz2>
     inline StaticSpan &operator=(const StaticSpan<_Ty, _Sz2> &copy) {
-      if (max_size < move.m_size)
+      if (max_size < copy.m_size)
         throw std::length_error("StaticSpan: can't assign copy from a larger span");
 
       if (this == &copy)
