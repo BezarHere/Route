@@ -20,14 +20,21 @@ namespace route
     _Max,
   };
 
+  enum class StorageBufUsage
+  {
+    StreamRead,
+    StreamWrite,
+    // todo...
+  };
+
   typedef vpid_t StorageBufferID;
 
   class StorageBuffer : public GraphicsResource
   {
     friend GraphicsDevice;
   public:
-    StorageBuffer( StorageBuffer && ) noexcept;
-    StorageBuffer &operator=( StorageBuffer && ) noexcept;
+    StorageBuffer(StorageBuffer &&) noexcept;
+    StorageBuffer &operator=(StorageBuffer &&) noexcept;
     ~StorageBuffer() noexcept;
 
     FORCE_INLINE StorageBufferID get_id() const {
@@ -42,13 +49,11 @@ namespace route
       return m_size;
     }
 
-    inline Error update( uint8_t *data, size_t length, size_t offset = 0U ) {
-      return get_device().update_buffer(*this, data, length, offset);
-    }
+    Error update(const void *data, size_t length, size_t offset = 0U);
 
   private:
     // can lead to segfaults if not used carefully
-    StorageBuffer( StorageBufferID id, StorageBufType type, size_t size, device &device);
+    StorageBuffer(StorageBufferID id, StorageBufType type, size_t size, device &device);
 
   private:
     StorageBufferID m_id;

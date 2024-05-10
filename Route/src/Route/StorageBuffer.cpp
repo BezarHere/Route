@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "../pch.h"
-#include "internal/storage_buffer.h"
+#include "internal/gl_utils.h"
 #include "StorageBuffer.h"
 #include "Logger.h"
 #include "IMap.h"
@@ -9,8 +9,6 @@
 
 namespace route
 {
-
-
   StorageBuffer::StorageBuffer(StorageBufferID id, StorageBufType type, size_t size, device &device)
     : GraphicsResource(device), m_id{ id }, m_type{ type }, m_size{ size } {
   }
@@ -36,5 +34,8 @@ namespace route
     get_device()._queue_free_buffer(*this);
   }
 
+  Error StorageBuffer::update(const void *data, size_t length, size_t offset) {
+    return get_device().update_buffer(*this, data, length, offset);
+  }
 
 }
