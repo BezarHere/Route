@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "Renderer.h"
 #include "../gapi.h"
-#include "internal/storage_buffer.h"
+#include "internal/gl_utils.h"
 
 
 /// @brief OPENGL: just returns a normal GL-context
@@ -26,30 +26,69 @@ static inline GraphicsDeviceID get_best_device(void *param) {
 
 }
 
+static inline void destroy_device(GraphicsDeviceID id, void *param) {
+  (void)param;
+
+#ifdef GAPI_GL
+  GAPI_IF_GL(GraphicsProfile::opengl()) {
+    OpenGL::delete_context(reinterpret_cast<SDL_Window *>(id));
+    return;
+  }
+#endif // GAPI_GL
+
+#ifdef GAPI_VK
+  GAPI_IF_VK(GraphicsProfile::vulkan()) {
+    // TODO: destroy the device and do cleanup
+  }
+#endif // GAPI_VK
+}
+
 namespace route
 {
   GraphicsDevice::GraphicsDevice(Window &window)
     : m_id{ get_best_device(window.get_handle()) },
     m_window{ window }, m_renderer{ *this },
     m_destroy_queues{} {
+
+    if (!m_id)
+    {
+      const char msg[] = "Failed to create context for Renderer";
+      Logger::write(msg, LogLevel::Error);
+      throw std::runtime_error(msg);
+    }
+
   }
 
-  resource_ref<StorageBuffer> GraphicsDevice::create_buffer(StorageBufType type, size_t size, int8_t *data) {
+  GraphicsDevice::~GraphicsDevice() {
+    m_renderer._finalize();
+    destroy_device(m_id, nullptr);
+  }
+
+  resource<StorageBuffer> GraphicsDevice::create_buffer(const StorageBufType type, size_t size) {
     if (!is_active())
       return {};
 #ifdef GAPI_GL
-    GLuint id = 0;
-    glGenBuffers(_rt::storage_buffer::to_gl_type(type), &id);
-    return _create_resource<StorageBuffer, StorageBuffer>((StorageBufferID)id, type, size, *this);
+    GAPI_IF_GL(GraphicsProfile::opengl()) {
+      GLuint id = 0;
+      glGenBuffers(1, &id);
+
+      GLuint old_bind = OpenGL::query_int(gl_rt::get_buffer_type_binding(type));
+
+      glBindBuffer(gl_rt::get_buffer_type(type), id);
+      glBufferData(gl_rt::get_buffer_type(type), size, nullptr, GL_STATIC_DRAW);
+
+      glBindBuffer(gl_rt::get_buffer_type(type), old_bind);
+      return _create_resource<StorageBuffer, StorageBuffer>((StorageBufferID)id, type, size, *this);
+    }
 #endif
   }
 
-  resource_ref<Texture> GraphicsDevice::create_texture(const TextureInfo &info) {
+  resource<Texture> GraphicsDevice::create_texture(const TextureInfo &info) {
     // TODO: stuff
     return {};
   }
 
-  resource_ref<Shader> GraphicsDevice::create_shader(const char *source, ShaderType type) {
+  resource<Shader> GraphicsDevice::create_shader(const char *source, ShaderType type) {
     if (!is_active())
       return {};
 #ifdef GAPI_GL
@@ -58,14 +97,23 @@ namespace route
     return {};
   }
 
+  resource<Pipeline> GraphicsDevice::create_pipeline(const PipelineCreateInfo &info) {
+    if (!is_active())
+      return {};
 
-  Error GraphicsDevice::update_buffer(StorageBuffer &buffer, uint8_t *data, size_t length, size_t offset) const {
+    return _create_resource<Pipeline, Pipeline>(info, *this);
+  }
+
+
+  Error GraphicsDevice::update_buffer(StorageBuffer &buffer, const void *data, size_t length, size_t offset) const {
     if (!is_active())
       return Error::DeviceInactive;
 
 #ifdef GAPI_GL
     GAPI_IF_GL(Application::graphics_api() == GraphicsAPI::OpenGL) {
-      GL_CALL_POST(glBufferSubData(_rt::storage_buffer::to_gl_type(buffer.m_type), offset, length, data), return glErrRT(err));
+      glBindBuffer(gl_rt::get_buffer_type(buffer.m_type), (GLuint)buffer.m_id);
+      GL_CALL_POST(glBufferSubData(gl_rt::get_buffer_type(buffer.m_type), offset, length, data), return glErrRT(err));
+      glBindBuffer(gl_rt::get_buffer_type(buffer.m_type), 0);
       return Error::Ok;
     }
 #endif // GAPI_GL
@@ -98,13 +146,13 @@ namespace route
     _free_shader({ shader.get_id() });
   }
 
-  void GraphicsDevice::_queue_free_shader_prog(const Pipeline &shader_prog) {
+  void GraphicsDevice::_queue_free_pipeline(const Pipeline &pipeline) {
     if (!is_active())
     {
-      m_destroy_queues.shader_programs.push_back({ shader_prog.get_id() });
+      m_destroy_queues.pipelines.push_back({ pipeline.get_id() });
       return;
     }
-    _free_shader_program({ shader_prog.get_id() });
+    _free_pipeline({ pipeline.get_id() });
   }
 
   void GraphicsDevice::_free_buffer(const StorageBufQueueEntry &entry) {
@@ -134,7 +182,7 @@ namespace route
 #endif // GAPI_GL
   }
 
-  void GraphicsDevice::_free_shader_program(const ShaderProgQueueEntry &entry) {
+  void GraphicsDevice::_free_pipeline(const PipelineQueueEntry &entry) {
 #ifdef GAPI_GL
     GAPI_IF_GL(GraphicsProfile::graphics_api()) {
       GLuint id = reinterpret_cast<GLuint>(entry);
@@ -162,14 +210,15 @@ namespace route
       m_destroy_queues.shaders.pop_back();
     }
 
-    while (!m_destroy_queues.shader_programs.empty())
+    while (!m_destroy_queues.pipelines.empty())
     {
-      _free_shader_program(m_destroy_queues.shader_programs.back());
-      m_destroy_queues.shader_programs.pop_back();
+      _free_pipeline(m_destroy_queues.pipelines.back());
+      m_destroy_queues.pipelines.pop_back();
     }
   }
 
   void GraphicsDevice::_begin() {
+    SDL_FNCHECK_V(OpenGL::set_context(m_window.get_handle(), m_id), return);
     m_flags = eFlag_Active;
 
     _process_destroy_queues();
