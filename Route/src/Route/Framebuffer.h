@@ -24,7 +24,7 @@ namespace route
   {
     FramebufferAttachmentType type;
     FramebufferAttachmentTarget target;
-    //resource_ref<Resource> rid;
+    //resource<Resource> rid;
   };
 
   class Framebuffer : GraphicsResource
