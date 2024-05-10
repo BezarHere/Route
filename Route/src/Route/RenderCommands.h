@@ -1,8 +1,9 @@
 #pragma once
 #include "ArrayView.h"
 #include "Enums.h"
-#include "Primitives.h"
+#include "Shape.h"
 #include "ResourceServer.h"
+#include "StaticSpan.h"
 #include "Texture.h"
 #include "Material.h"
 #include "Shader.h"
@@ -21,8 +22,8 @@ namespace route
     {
       Draw,
       DrawIndexed,
-      DrawPrimitive2D,
-      DrawPrimitive3D,
+
+      DrawShape,
 
       BindVertexBuffer,
       BindIndexBuffer,
@@ -97,6 +98,15 @@ namespace route
       // for cache invalidation
       // if the resource has the same change counter, then it hasn't change
       refc_t change_counter;
+    };
+
+    struct CmdDrawShape : public Cmd
+    {
+      inline CmdDrawShape(const ShapeData &p_value)
+        : Cmd{ CmdType::DrawShape }, value{ p_value } {
+      }
+
+      ShapeData value;
     };
 
     struct CmdSetViewport : public Cmd
@@ -181,8 +191,7 @@ namespace route
     using CmdSetTransform2D = TCmdSWrapper<Transform2D, CmdType::SetTransform2D>;
     using CmdSetTransform3D = TCmdSWrapper<Transform3D, CmdType::SetTransform3D>;
 
-    using CmdDrawPrimitive2D = TCmdSWrapper<boxed_primitive_2d, CmdType::DrawPrimitive2D>;
-    using CmdDrawPrimitive3D = TCmdSWrapper<boxed_primitive_3d, CmdType::DrawPrimitive3D>;
+    using CmdDrawShape = CmdDrawShape;
 
     using CmdSetTexture = TCmdSSetResource<Texture, CmdType::SetTexture>;
     using CmdSetShader = TCmdSSetResource<Shader, CmdType::SetShader>;
@@ -233,7 +242,7 @@ namespace route
     FORCE_INLINE void _instance(_Args &&...args) {
       if constexpr (std::is_constructible_v<_Ty, _Args...>)
         new(this) _Ty(std::forward<_Args>(args)...);
-      // TODO: what should happen if this is called without creating _Ty?
+      // TODO: what should happen if this is called when we are unable to create _Ty?
     }
 
     template <typename _Ty>
@@ -245,12 +254,42 @@ namespace route
     rcq::Cmd m_base;
     rcq::CmdSetTransform2D m_xform2d;
     rcq::CmdSetTransform3D m_xform3d;
-    rcq::CmdDrawPrimitive2D m_primitive2d;
-    rcq::CmdDrawPrimitive3D m_primitive3d;
+    rcq::CmdDrawShape m_shape;
     rcq::CmdSetTexture m_texture;
     rcq::CmdSetShader m_shader;
     rcq::CmdDraw m_draw_vertices;
     rcq::CmdBindVertexBuffer m_bind_vertex_source;
+  };
+
+
+  class RenderCollector
+  {
+    friend Renderer;
+  public:
+    // 2mb worth of command instances
+    static constexpr size_t DefaultCmdBufSize = 0x200000ULL / sizeof(CommandInstance);
+    using container_type = StaticSpan<CommandInstance, DefaultCmdBufSize>;
+
+    FORCE_INLINE const container_type &get_container() const {
+      return m_container;
+    }
+
+    FORCE_INLINE const container_type *operator->() const {
+      return &m_container;
+    }
+
+    template <typename... _Args>
+    FORCE_INLINE auto emplace_back(_Args &&... args) {
+      m_container.emplace_back(args);
+    }
+
+  private:
+
+    FORCE_INLINE RenderCollector(container_type &container) : m_container{ container } {
+    }
+
+  private:
+    container_type &m_container;
   };
 
   template<typename ..._Args>
@@ -264,11 +303,8 @@ namespace route
     case CmdType::DrawIndexed:
       _INSTANCE_CALL(rcq::CmdDrawIndexed);
       break;
-    case CmdType::DrawPrimitive2D:
-      _INSTANCE_CALL(rcq::CmdDrawPrimitive2D);
-      break;
-    case CmdType::DrawPrimitive3D:
-      _INSTANCE_CALL(rcq::CmdDrawPrimitive3D);
+    case CmdType::DrawShape:
+      _INSTANCE_CALL(rcq::CmdDrawShape);
       break;
 
     case CmdType::BindVertexBuffer:
@@ -313,11 +349,8 @@ namespace route
     case CmdType::DrawIndexed:
       _dtor<rcq::CmdDrawIndexed>();
       break;
-    case CmdType::DrawPrimitive2D:
-      _dtor<rcq::CmdDrawPrimitive2D>();
-      break;
-    case CmdType::DrawPrimitive3D:
-      _dtor<rcq::CmdDrawPrimitive3D>();
+    case CmdType::DrawShape:
+      _dtor<rcq::CmdDrawShape>();
       break;
 
     case CmdType::BindVertexBuffer:
