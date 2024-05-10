@@ -4,153 +4,159 @@
 
 namespace route
 {
-	enum class PrimitiveType2D
-	{
-		Rect,
-		Circle,
-		Triangle,
-		Line,
-	};
+  namespace shapes
+  {
+    enum class ShapeType2D
+    {
+      Rect,
+      Circle,
+      Triangle,
+      Line,
+    };
 
-	enum class PrimitiveType3D
-	{
-		Cube,
-		Sphere,
-		Pyrimid,
-		Plane,
-		Tupe,
-	};
+    enum class ShapeType3D
+    {
+      Cube,
+      Sphere,
+      Pyrimid,
+      Plane,
+      Tupe,
+    };
 
-	template <typename _XForm>
-	struct TPrimitiveND
-	{
-		template <typename>
-		struct traits;
+    template <typename _Traits>
+    struct TShapeDataND
+    {
+      template <typename>
+      struct _type_enum;
 
-		template <>
-		struct traits<Transform2D> {
-			using type = PrimitiveType2D;
-		};
+      template <>
+      struct _type_enum<traits::Impl2D> {
+        using type = ShapeType2D;
+      };
 
-		template <>
-		struct traits<Transform3D> {
-			using type = PrimitiveType3D;
-		};
+      template <>
+      struct _type_enum<traits::Impl3D> {
+        using type = ShapeType3D;
+      };
 
-		using this_type = TPrimitiveND<_XForm>;
-		using transform_type = _XForm;
-		using vector_type = typename _XForm::vector_type;
-		using real_type = typename vector_type::value_type;
-		using type_type = typename traits<_XForm>::type; /* ridiculous */
+      using traits = _Traits;
+      using this_type = TShapeDataND<_Traits>;
+      using transform_type = typename _Traits::transform;
+      using vector_type = typename _Traits::direction;
+      using real_type = typename vector_type::value_type;
+      using type_enum = typename _type_enum<_Traits>::type; /* ridiculous */
 
-		// more typing
-		inline TPrimitiveND( const type_type p_type ) : type{ p_type } {
-		}
+      // more typing
+      inline TShapeDataND(const type_enum type) : m_type{ type } {
+      }
 
-		// shouldn't be changed, setting it as const gives a severe headache
-		/*const*/ type_type type;
-	};
+      inline type_enum get_type() const {
+        return m_type;
+      }
 
-	using Primitive2D = TPrimitiveND<Transform2D>;
-	using Primitive3D = TPrimitiveND<Transform3D>;
+    private:
+      type_enum m_type;
+    };
 
-	struct RectPrimitive : public Primitive2D
-	{
-		inline RectPrimitive()
-			: Primitive2D( Primitive2D::type_type::Circle ) {
-		}
+    using ShapeData2D = TShapeDataND<traits::Impl2D>;
+    using ShapeData3D = TShapeDataND<traits::Impl3D>;
 
-		inline RectPrimitive( const Rect2f &p_rect )
-			: Primitive2D( Primitive2D::type_type::Circle ), rect{ p_rect } {
-		}
+    struct RectShape : public ShapeData2D
+    {
+      inline RectShape()
+        : ShapeData2D(ShapeData2D::type_enum::Rect) {
+      }
 
-		Rect2f rect;
-	};
+      inline RectShape(const Rect2f &p_rect)
+        : ShapeData2D(ShapeData2D::type_enum::Rect), rect{ p_rect } {
+      }
 
-	struct CirclePrimitive : public Primitive2D
-	{
-		inline CirclePrimitive()
-			: Primitive2D( Primitive2D::type_type::Circle ) {
-		}
+      Rect2f rect;
+    };
 
-		inline CirclePrimitive( const real_type p_radius )
-			: Primitive2D( Primitive2D::type_type::Circle ), radius{ p_radius } {
-		}
+    struct CircleShape : public ShapeData2D
+    {
+      inline CircleShape()
+        : ShapeData2D(ShapeData2D::type_enum::Circle) {
+      }
 
-		real_type radius;
-	};
+      inline CircleShape(const real_type p_radius)
+        : ShapeData2D(ShapeData2D::type_enum::Circle), radius{ p_radius } {
+      }
 
-	template <typename _Ty>
-	struct primitive_type_shifter
-	{
-		using value_type = _Ty;
+      real_type radius;
+    };
 
-		template <typename _Ey>
-		static inline  void construct( value_type *to, const _Ey &from ) {
-			new (to) _Ey( from );
-		}
+  }
 
-		template <typename _Ey>
-		static inline  void construct( value_type *to, _Ey &&from ) {
-			new (to) _Ey( from );
-		}
+  union PrimitiveShape2D
+  {
+  public:
+    using shape_data_type = shapes::ShapeData2D;
+    using traits = typename shape_data_type::traits;
+    using type_enum = typename shape_data_type::type_enum;
 
-		static inline  void destroy( value_type &obj ) {
-			obj.~value_type();
-		}
+    template <typename... _Args>
+    PrimitiveShape2D(type_enum type, _Args &&...args);
+    PrimitiveShape2D(const PrimitiveShape2D &copy);
+    PrimitiveShape2D &operator=(const PrimitiveShape2D &copy);
+    ~PrimitiveShape2D();
 
-		static inline void assign( value_type &to, const value_type &from );
+    template <typename _Ty>
+    inline _Ty &get() {
+      static_assert(std::is_convertible_v<_Ty, shape_data_type>, "Unrecognized _Ty");
+      return *reinterpret_cast<_Ty *>(this);
+    }
 
-	};
+    template <typename _Ty>
+    inline const _Ty &get() const {
+      static_assert(std::is_convertible_v<_Ty, shape_data_type>, "Unrecognized _Ty");
+      return *reinterpret_cast<_Ty *>(this);
+    }
 
-	using boxed_primitive_2d = boxed<Primitive2D, 64, primitive_type_shifter<Primitive2D>>;
-	using boxed_primitive_3d = boxed<Primitive3D, 96, primitive_type_shifter<Primitive3D>>;
+  private:
 
-	template<>
-	inline void primitive_type_shifter<Primitive2D>::assign( value_type &to, const value_type &from ) {
-		switch (to.type)
-		{
-		case PrimitiveType2D::Rect:
-			static_cast<RectPrimitive &>(to) = static_cast<const RectPrimitive &>(from);
-			return;
-		case PrimitiveType2D::Circle:
-			static_cast<CirclePrimitive &>(to) = static_cast<const CirclePrimitive &>(from);
-			return;
-		case PrimitiveType2D::Triangle:
+    template <typename _Ty, typename... _Args>
+    FORCE_INLINE void _instance(_Args &&...args) {
+      if constexpr (std::is_constructible_v<_Ty, _Args...>)
+        new(this) _Ty(std::forward<_Args>(args)...);
+      // TODO: what should happen if this is called without creating _Ty?
+    }
 
-			return;
-		case PrimitiveType2D::Line:
+    template <typename _Ty>
+    FORCE_INLINE void _dtor() {
+      ((_Ty *)this)->~_Ty();
+    }
 
-			return;
-		default:
-			to = from;
-			return;
-		}
-	}
+  private:
+    shape_data_type m_base;
+    shapes::RectShape m_rect;
+    shapes::CircleShape m_circle;
+  };
 
-	template<>
-	inline void primitive_type_shifter<Primitive3D>::assign( value_type &to, const value_type &from ) {
-		switch (to.type)
-		{
-		case PrimitiveType3D::Cube:
+  union PrimitiveShape3D
+  {
+  public:
+    using shape_data_type = PrimitiveData3D;
+    using traits = typename shape_data_type::traits;
 
-			return;
-		case PrimitiveType3D::Sphere:
+  private:
 
-			return;
-		case PrimitiveType3D::Pyrimid:
+  };
 
-			return;
-		case PrimitiveType3D::Plane:
-
-			return;
-		case PrimitiveType3D::Tupe:
-
-			return;
-		default:
-			to = from;
-			return;
-		}
-	}
+  template<typename ..._Args>
+  inline PrimitiveShape2D::PrimitiveShape2D(type_enum type, _Args && ...args) : m_base{ type } {
+    switch (type)
+    {
+    case type_enum::Circle:
+      _instance<CirclePrimitive>(std::forward<_Args>(args)...);
+      break;
+    case type_enum::Rect:
+      _instance<RectPrimitive>(std::forward<_Args>(args)...);
+      break;
+    default:
+      break;
+    }
+  }
 
 }
