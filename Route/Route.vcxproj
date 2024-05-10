@@ -252,7 +252,6 @@
     <ClInclude Include="src\gapi.h" />
     <ClInclude Include="src\Route.h" />
     <ClInclude Include="src\pch.h" />
-    <ClInclude Include="src\Route\AppendInterface.h" />
     <ClInclude Include="src\Route\Bases.h" />
     <ClInclude Include="src\Route\Enums.h" />
     <ClInclude Include="src\Route\Error.h" />
@@ -267,6 +266,7 @@
     <ClInclude Include="src\Route\RenderCommands.h" />
     <ClInclude Include="src\Route\ShaderFactory.h" />
     <ClInclude Include="src\Route\Pipeline.h" />
+    <ClInclude Include="src\Route\Shape.h" />
     <ClInclude Include="src\Route\StaticSpan.h" />
     <ClInclude Include="src\Route\VertexInputInfo.h" />
     <ClInclude Include="src\Route\Performance.h" />
@@ -289,7 +289,6 @@
     <ClInclude Include="src\Route\Rect.h" />
     <ClInclude Include="src\Route\Renderer.h" />
     <ClInclude Include="src\Route\Shader.h" />
-    <ClInclude Include="src\Route\Primitives.h" />
     <ClInclude Include="src\Route\ArrayView.h" />
     <ClInclude Include="src\Route\Texture.h" />
     <ClInclude Include="src\Route\Traits.h" />
@@ -315,6 +314,7 @@
     <ClCompile Include="src\Route\RenderCommands.cpp" />
     <ClCompile Include="src\Route\Shader.cpp" />
     <ClCompile Include="src\Route\Pipeline.cpp" />
+    <ClCompile Include="src\Route\Shape.cpp" />
     <ClCompile Include="src\Route\StorageBuffer.cpp" />
     <ClCompile Include="src\Route\Component.cpp" />
     <ClCompile Include="src\Route\Application.cpp" />

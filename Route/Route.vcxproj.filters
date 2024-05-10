@@ -297,9 +297,6 @@
     <ClInclude Include="src\Route\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\Primitives.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Route\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -414,7 +411,7 @@
     <ClInclude Include="src\Route\internal\pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route\AppendInterface.h">
+    <ClInclude Include="src\Route\Shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -480,6 +477,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Route\RenderCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Route\Shape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

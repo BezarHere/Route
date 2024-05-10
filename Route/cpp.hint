@@ -2,3 +2,5 @@
 // such as names of functions and macros.
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define _INTERFACE
+#define _INSTANCE_CASE(name) case shapes::Type::name: _instance<shapes::name>(std::forward<_Args>(args)...); break;
+#define _INSTANCE_CASE(name) case shapes::Type::name: _dtor<shapes::name>(); return
